@@ -3,12 +3,12 @@ import logging
 import os
 import shutil
 
-from tox3.config import Config
+from tox3.config import BuildEnvConfig
 from tox3.util import PrintAndKeepLastLine, run
 from tox3.venv import Venv
 
 
-async def create_install_package(config: Config):
+async def create_install_package(config: BuildEnvConfig):
     build_dir = config.work_dir / '.build'
     out_dir = build_dir / 'dist'
 

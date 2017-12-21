@@ -60,10 +60,10 @@ def main(argv: List[str]):
 async def run(argv: List[str]):
     config = await load_config(argv)
 
-    await create_install_package(config)
+    await create_install_package(config.build)
 
     for env_name in config.envs:
-        await run_env(config, env_name)
+        await run_env(config.env(env_name))
 
     return 0
 

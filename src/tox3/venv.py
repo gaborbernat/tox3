@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 import venv
 
+from tox3.interpreters import get_interpreter
 from tox3.util import run
 
 
@@ -16,7 +17,9 @@ class EnvB(venv.EnvBuilder):
 
 class Venv:
 
-    def __init__(self, dest_dir: Path, name: str):
+    def __init__(self, dest_dir: Path, name: str, python: str):
+        base_python_exe = get_interpreter(python)
+
         logging.info('create venv %s at %r', name, dest_dir)
         env_dir = dest_dir / name
 
