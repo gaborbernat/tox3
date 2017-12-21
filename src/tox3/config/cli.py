@@ -1,5 +1,7 @@
 import argparse
 import logging
+import os
+from pathlib import Path
 from typing import List
 
 VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
@@ -11,8 +13,11 @@ VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
 def parse(args: List[str]):
     parser = argparse.ArgumentParser("tox3")
     pre_process_flags(parser)
-    parser.add_argument('--config', type=argparse.FileType('r'))
+    parser.add_argument('--config', type=argparse.FileType('r'), default=None)
     args = parser.parse_args(args)
+
+    if args.config is None:
+        args.config = Path(os.getcwd()) / 'pyproject.toml'
     logging.debug('CLI flags %r', args)
     return args
 

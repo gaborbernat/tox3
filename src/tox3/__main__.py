@@ -3,6 +3,9 @@ import logging
 import sys
 from typing import List
 
+import colorlog
+from eliot import start_action
+
 from tox3.build import create_install_package
 from tox3.config import load as load_config
 from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_verbose
@@ -25,7 +28,8 @@ def _setup_logging(verbose=None, quiet=False):
     else:
         level = VERBOSITY_TO_LOG_LEVEL.get(verbose, logging.DEBUG)
         locate = 'pathname' if verbose >= 3 else 'module'
-        formatter = logging.Formatter(str("[%(asctime)s] %(levelname)s [%({})s:%(lineno)d] %(message)s".format(locate)))
+        fmt = str("%(log_color)s[%(asctime)s] %(levelname)s [%({})s:%(lineno)d] %(message)s".format(locate))
+        formatter = colorlog.ColoredFormatter(fmt)
         stream_handler = logging.StreamHandler(stream=sys.stderr)
         stream_handler.setLevel(level)
         LOGGER.setLevel(level)
@@ -55,12 +59,13 @@ def main(argv: List[str]):
 
 async def run(argv: List[str]):
     config = await load_config(argv)
+
     await create_install_package(config)
 
-    print('')
-    for env_name in config.envs:
-        print(f'{env_name} => {config.env(env_name)}')
-        
+    with start_action(action_type=u"build package"):
+        for env_name in config.envs:
+            print(f'{env_name} => {config.env(env_name)}')
+
     return 0
 
 
@@ -69,4 +74,4 @@ def build_package():
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1:])

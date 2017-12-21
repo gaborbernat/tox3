@@ -1,8 +1,6 @@
 import asyncio
 import logging
 
-import sys
-
 
 async def _read_stream(stream, callback):
     while True:
@@ -26,13 +24,11 @@ async def _stream_subprocess(cmd, stdout_cb, stderr_cb):
 
 
 def print_to_sdtout(line):
-    sys.stdout.write(line)
-    sys.stdout.flush()
+    logging.debug(line.rstrip())
 
 
 def print_to_sdterr(line):
-    sys.stderr.write(line)
-    sys.stderr.flush()
+    logging.warning(line.rstrip())
 
 
 async def run(cmd, stdout=print_to_sdtout, stderr=print_to_sdterr):

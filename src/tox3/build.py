@@ -33,22 +33,22 @@ async def create_install_package(config: Config):
             logging.debug('clean %r', path)
             shutil.rmtree(path)
 
-    logging.debug('create virtual environment for package build in %r', env_dir)
+    logging.info('create virtual environment for package build in %r', env_dir)
     venv.create(env_dir, with_pip=True)
     env_build = EnvB(with_pip=True)
     env_build.create(env_dir)
-    logging.debug('virtual environment executable at %r', env_build.executable)
-
-    logging.debug('pip install build init requires %r', config.build_requires)
-    await run([env_build.executable, '-m', 'pip', '-vvv', 'install', *config.build_requires])
+    logging.info('virtual environment executable at %r', env_build.executable)
 
     cwd = os.getcwd()
     try:
         logging.debug('change cwd to %r', config.root_dir)
         os.chdir(config.root_dir)
 
-        logging.debug('clean package dir')
+        logging.info('clean package dir')
         await run([env_build.executable, 'setup.py', 'clean', '--all'])
+
+        logging.info('pip install build requires %r', config.build_requires)
+        await run([env_build.executable, '-m', 'pip', 'install', *config.build_requires])
 
         last_stdout = None
 
@@ -66,16 +66,13 @@ print(json.dumps(build_requires))
         result = await run([env_build.executable, '-c', script], stdout=store_last_stdout)
         if not result and last_stdout:
             build_package_requires = json.loads(last_stdout)
-            logging.debug('pip install build run requires %r', build_package_requires)
+            logging.info('pip install build run requires %r', build_package_requires)
             await run([env_build.executable, '-m', 'pip', 'install', *build_package_requires])
         else:
             logging.error('could not build package')
             raise SystemExit(-1)
 
-        logging.debug('pip install build requires %r', config.build_requires)
-        await run([env_build.executable, '-m', 'pip', 'install', *config.build_requires])
-
-        logging.debug('build package %r', config.root_dir)
+        logging.info('build package %r', config.root_dir)
         script = f"""
 import {config.build_backend} as build
 basename = build.build_wheel("{str(out_dir)}")
@@ -84,7 +81,7 @@ print(basename)
         result = await run([env_build.executable, '-c', script], stdout=store_last_stdout)
         if not result and last_stdout:
             config.built_package = out_dir / last_stdout
-            logging.debug('built %s', config.built_package)
+            logging.info('built %s', config.built_package)
         else:
             logging.error('could not build package')
             raise SystemExit(-1)

@@ -10,7 +10,6 @@ from .cli import parse
 async def load(argv: List[str]):
     options = parse(argv)
     config = Config(options)
-    logging.debug('load config file %r', config)
     return config
 
 
