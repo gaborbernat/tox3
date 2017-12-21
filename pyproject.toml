@@ -1,0 +1,17 @@
+[build-system]
+requires = ['setuptools', 'wheel']
+build-backend = 'setuptools:build_meta'
+
+[tool.tox3]
+    envlist = ['py35', 'py36']
+
+    [tool.tox3.env]
+        description = 'run the unit tests with pytest under {basepython}'
+        commands = ['pytest']
+
+    [tool.tox3.env.py35]
+        commands = ["python -c 'print(3.5)'",
+                    'pytest']
+
+
+
