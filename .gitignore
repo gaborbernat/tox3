@@ -12,7 +12,7 @@ __pycache__
 build
 dist
 doc/_build/
-tox.egg-info
+*.egg-info
 .tox3
 .cache
 

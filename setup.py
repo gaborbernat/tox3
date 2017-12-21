@@ -1,16 +1,18 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='tox3',
     description='virtualenv-based automation of test activities',
     url='https://tox.readthedocs.org/',
     use_scm_version=True,
+    include_package_data=True,
     license='http://opensource.org/licenses/MIT',
     platforms=['unix', 'linux', 'osx', 'cygwin', 'win32'],
-    author='holger krekel',
-    author_email='holger@merlinux.eu',
-    packages=['tox'],
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
+    author='Bernat Gabor',
+    author_email='gaborjbernat@gmail.com',
+    package_dir={'': 'src'},
+    packages=find_packages('src'),
+    python_requires='>=3.5',
     setup_requires=['setuptools_scm'],
     install_requires=['toml >= 0.9.3, <1'],
     extras_require={'testing': ['pytest >= 3.0.0',

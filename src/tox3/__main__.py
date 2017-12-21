@@ -1,57 +1,67 @@
-import argparse
-import os
-import subprocess
+import asyncio
+import logging
 import sys
-import venv
 from typing import List
 
-from tox3.config import load_config, Config
+from tox3.build import create_install_package
+from tox3.config import load as load_config
+from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_verbose
+
+LOGGER = logging.getLogger()
 
 
-class EnvB(venv.EnvBuilder):
-    executable = None
-
-    def post_setup(self, context):
-        self.executable = context.env_exe
+def _clean_handlers(log):
+    for log_handler in list(log.handlers):  # remove handlers of libraries
+        log.removeHandler(log_handler)
 
 
-def _run(args):
-    process = subprocess.Popen(args,
-                               stderr=subprocess.PIPE, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    for line in iter(process.stdout.readline, b''):
-        sys.stdout.write(line)
-    for line in iter(process.stderr.readline, b''):
-        sys.stderr.write(line)
-    process.communicate()
+def _setup_logging(verbose=None, quiet=False):
+    """Setup logging."""
+    _clean_handlers(LOGGER)
+    if verbose is None:
+        verbose = 0
+    if quiet:
+        LOGGER.addHandler(logging.NullHandler())
+    else:
+        level = VERBOSITY_TO_LOG_LEVEL.get(verbose, logging.DEBUG)
+        locate = 'pathname' if verbose >= 3 else 'module'
+        formatter = logging.Formatter(str("[%(asctime)s] %(levelname)s [%({})s:%(lineno)d] %(message)s".format(locate)))
+        stream_handler = logging.StreamHandler(stream=sys.stderr)
+        stream_handler.setLevel(level)
+        LOGGER.setLevel(level)
+        stream_handler.setFormatter(formatter)
+        LOGGER.addHandler(stream_handler)
+        logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
-def create_install_package(config: Config):
-    build_dir = config.workdir / '.build'
-    env_dir = build_dir / 'env'
-    out_dir = build_dir / 'dist'
-    venv.create(env_dir, with_pip=True)
-    env_build = EnvB(with_pip=True)
-    env_build.create(env_dir)
-    _run([env_build.executable, '-m', 'pip', 'install', *config.build_requires])
-    SCRIPT = f'import {config.build_backend} as build; build.build_wheel("{str(out_dir)}")'
+def main(argv: List[str]):
+    _setup_logging(*get_verbose(argv))
 
-    cwd = os.getcwd()
+    if sys.platform == 'win32':
+        loop = asyncio.ProactorEventLoop()
+        asyncio.set_event_loop(loop)
+    else:
+        loop = asyncio.get_event_loop()
+    logging.debug('got event loop %r', loop)
+
     try:
-        os.chdir(config.root_dir)
-        _run([env_build.executable, '-c', SCRIPT])
+        result = loop.run_until_complete(run(argv))
+        logging.debug('done with %s', result)
+        return result
     finally:
-        os.chdir(cwd)
+
+        loop.close()
 
 
-def main(args: List[str]):
-    parser = argparse.ArgumentParser("tox3")
-    parser.add_argument('--config', type=argparse.FileType('r'))
-    args = parser.parse_args(args)
-    config = load_config(args.config)
-    create_install_package(config)
+async def run(argv: List[str]):
+    config = await load_config(argv)
+    await create_install_package(config)
+
     print('')
     for env_name in config.envs:
         print(f'{env_name} => {config.env(env_name)}')
+        
+    return 0
 
 
 def build_package():
