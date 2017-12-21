@@ -3,15 +3,19 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'
 
 [tool.tox3]
-    envlist = ['py35', 'py36']
+    envlist = ['env']
+    basepython = 'python3.6'
+
+    [tool.tox3._build]
+    basepython = 'python3.6'
 
     [tool.tox3.env]
         description = 'run the unit tests with pytest under {basepython}'
-        commands = ['pytest']
+        commands = ["python -c 'import sys; print(sys.executable)'",
+                     """python -c 'import os; print(\"\\n\".join(str(i) for i in os.environ.items()))'"""]
 
-    [tool.tox3.env.py35]
-        commands = ["python -c 'print(3.5)'",
-                    'pytest']
+    [tool.tox3.env.print_test]
+        commands = ["python -c 'print(3.5)'"]
 
 
 

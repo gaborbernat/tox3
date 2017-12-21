@@ -4,11 +4,11 @@ import sys
 from typing import List
 
 import colorlog
-from eliot import start_action
 
 from tox3.build import create_install_package
 from tox3.config import load as load_config
 from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_verbose
+from tox3.env import run_env
 
 LOGGER = logging.getLogger()
 
@@ -62,9 +62,8 @@ async def run(argv: List[str]):
 
     await create_install_package(config)
 
-    with start_action(action_type=u"build package"):
-        for env_name in config.envs:
-            print(f'{env_name} => {config.env(env_name)}')
+    for env_name in config.envs:
+        await run_env(config, env_name)
 
     return 0
 
