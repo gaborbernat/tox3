@@ -12,7 +12,7 @@ class Config:
 
         _toml = toml.load(config)
         self.build_requires = _toml['build-system']['requires']
-        self.build_backend = _toml['build-system']['build-backend']
+        self.build_backend = _toml['build-system']['build-backend'].replace(':', '.')
 
         self._raw = _toml['tool']['tox3']
 

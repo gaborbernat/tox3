@@ -1,9 +1,8 @@
 from setuptools import setup
 
-setuptools.setup(
-    name='tox',
+setup(
+    name='tox3',
     description='virtualenv-based automation of test activities',
-    long_description=get_long_description(),
     url='https://tox.readthedocs.org/',
     use_scm_version=True,
     license='http://opensource.org/licenses/MIT',
@@ -11,8 +10,6 @@ setuptools.setup(
     author='holger krekel',
     author_email='holger@merlinux.eu',
     packages=['tox'],
-    entry_points={'console_scripts': ['tox=tox:cmdline',
-                                      'tox-quickstart=tox._quickstart:main']},
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     setup_requires=['setuptools_scm'],
     install_requires=['toml >= 0.9.3, <1'],
