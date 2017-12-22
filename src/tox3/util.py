@@ -4,6 +4,8 @@ import logging
 from collections import deque
 from functools import partial
 
+import sys
+
 
 async def _read_stream(stream, callback):
     while True:
@@ -42,18 +44,22 @@ def print_to_sdterr(line, level=logging.DEBUG):
 
 
 async def run(cmd, stdout=print_to_sdtout, stderr=print_to_sdterr, env=None, shell=False):
+    if shell is False:
+        cmd = [i if isinstance(i, str) else str(i) for i in cmd]
     result_code = await _stream_subprocess(cmd, stdout, stderr, env=env, shell=shell)
     return result_code
 
 
-class PrintAndKeepLastLine:
+class Buffer:
 
-    def __init__(self, limit):
+    def __init__(self, limit=None, live_print=True):
+        self.live_print = live_print
         self.elements = deque(maxlen=limit)
 
     def __call__(self, line):
         self.elements.append(line.rstrip())
-        print_to_sdtout(line)
+        if self.live_print:
+            print_to_sdtout(line)
 
     @property
     def json(self):

@@ -62,7 +62,7 @@ async def run(argv: List[str]):
 
     await create_install_package(config.build)
 
-    for env_name in config.envs:
+    for env_name in config.run_environments:
         await run_env(config.env(env_name), config.build)
 
     return 0

@@ -4,7 +4,7 @@ import os
 import shutil
 
 from tox3.config import BuildEnvConfig
-from tox3.util import PrintAndKeepLastLine, run
+from tox3.util import Buffer, run
 from tox3.venv import Venv
 
 
@@ -24,7 +24,7 @@ async def create_install_package(config: BuildEnvConfig):
 
         await env.pip(config.build_requires, batch_name='build requires')
 
-        printer = PrintAndKeepLastLine(limit=1)
+        printer = Buffer(limit=1)
 
         script = f"""
 import {config.build_backend_full} as build
@@ -32,7 +32,7 @@ import json
 build_requires = build.get_requires_for_build_wheel(None)
 print(json.dumps(build_requires))
         """
-        result = await run([env.executable, '-c', script], stdout=printer)
+        result = await run([str(env.executable), '-c', script], stdout=printer)
 
         if not result and printer.last:
             await env.pip(printer.json, batch_name='setup requires')
@@ -65,7 +65,7 @@ print(basename)
 async def _clean(config, executable):
     logging.info('clean package dir')
 
-    await run([executable, 'setup.py', 'clean', '--all'])
+    await run([str(executable), 'setup.py', 'clean', '--all'])
 
     for path in [config.root_dir / 'dist',
                  config.root_dir / '.eggs']:

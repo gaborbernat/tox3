@@ -16,6 +16,7 @@ def parse(args: List[str]):
     parser.add_argument('--config', type=argparse.FileType('r'), default=None)
     parser.add_argument('-r', '--recreate', action='store_true', default=False,
                         help='recreate the virtual environmentF')
+    parser.add_argument('-e', '--environments', help='run only this run environments', nargs="+", type=str)
     args = parser.parse_args(args)
 
     if args.config is None:

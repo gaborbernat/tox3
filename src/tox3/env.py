@@ -21,6 +21,6 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig):
 def environment_variables(bin_path):
     os_env = os.environ.copy()
     paths = os_env.get('PATH', '').split(os.pathsep)
-    paths = [bin_path] + paths
+    paths = [str(bin_path)] + paths
     os_env['PATH'] = os.pathsep.join(paths)
     return os_env

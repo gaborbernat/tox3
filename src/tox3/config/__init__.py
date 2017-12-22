@@ -78,6 +78,10 @@ class ToxConfig(CoreToxConfig):
     def envs(self):
         return self._raw['envlist']
 
+    @property
+    def run_environments(self):
+        return self._options.environments if self._options.environments else self.envs
+
     def env(self, env_name: str) -> 'RunEnvConfig':
         return self._envs[env_name]
 
