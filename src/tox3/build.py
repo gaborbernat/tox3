@@ -24,7 +24,7 @@ async def create_install_package(config: BuildEnvConfig):
             logging.debug('clean %r', path)
             shutil.rmtree(path)
 
-    env = Venv(build_dir, 'env')
+    env = Venv(build_dir, 'env', config.python)
 
     cwd = os.getcwd()
     try:
@@ -39,7 +39,7 @@ async def create_install_package(config: BuildEnvConfig):
         printer = PrintAndKeepLastLine()
 
         script = f"""
-import {config.build_backend} as build
+import {config.build_backend_full} as build
 import json
 build_requires = build.get_requires_for_build_wheel(None)
 print(json.dumps(build_requires))
@@ -54,11 +54,12 @@ print(json.dumps(build_requires))
 
         logging.info('build package %r', config.root_dir)
         script = f"""
-import {config.build_backend} as build
-basename = build.build_wheel("{str(out_dir)}")
+import sys        
+import {config.build_backend_full} as build
+basename = build.build_wheel(sys.argv[1])
 print(basename)
 """
-        result = await run([env.executable, '-c', script], stdout=printer)
+        result = await run([env.executable, '-c', script, str(out_dir)], stdout=printer)
         if not result and printer.last:
             config.built_package = out_dir / printer.last
             logging.info('built %s', config.built_package)

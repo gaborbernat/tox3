@@ -1,16 +1,16 @@
-from functools import partial
 import logging
 import os
+from functools import partial
 
-from tox3.config import ToxConfig, RunEnvConfig
+from tox3.config import RunEnvConfig, BuildEnvConfig
 from tox3.util import print_to_sdtout, run
 from tox3.venv import Venv
 
 
-async def run_env(config: RunEnvConfig):
-    venv = Venv(config.work_dir, config.name)
-    await venv.pip(deps=[str(config.built_package)], batch_name='project package')
-    for command in env_config['commands']:
+async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig):
+    venv = Venv(config.work_dir, config.name, config.python)
+    await venv.pip(deps=[str(build_config.built_package)], batch_name='project package')
+    for command in config.commands:
         logging.info('run: %s', command)
         env_vars = environment_variables(venv.bin_path)
         await run(command, env=env_vars, shell=True, stdout=partial(print_to_sdtout, level=logging.INFO))

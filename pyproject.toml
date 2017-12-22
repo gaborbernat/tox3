@@ -4,15 +4,15 @@ build-backend = 'setuptools:build_meta'
 
 [tool.tox3]
     envlist = ['env']
-    basepython = 'python3.6'
-
-    [tool.tox3._build]
-    basepython = 'python3.6'
 
     [tool.tox3.env]
+        basepython = 'python3.6'
         description = 'run the unit tests with pytest under {basepython}'
-        commands = ["python -c 'import sys; print(sys.executable)'",
-                     """python -c 'import os; print(\"\\n\".join(str(i) for i in os.environ.items()))'"""]
+        commands = ["python -c \"import sys; print(sys.executable)\" ",
+                     """python -c \"import os; print('\\n'.join(str(i) for i in os.environ.items()))\" """]
+
+    [tool.tox3.env._build]
+        basepython = 'python3.6'
 
     [tool.tox3.env.print_test]
         commands = ["python -c 'print(3.5)'"]
