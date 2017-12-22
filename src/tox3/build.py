@@ -9,17 +9,13 @@ from tox3.venv import Venv
 
 
 async def create_install_package(config: BuildEnvConfig):
-    build_dir = config.work_dir / '.build'
-    out_dir = build_dir / 'dist'
+    env = await Venv.from_python(config.python, config.work_dir, '_build', config.recreate)
+    out_dir = config.work_dir / '_build' / '.out'
 
     if out_dir.exists():
         logging.debug('clean package destination %r', out_dir)
         shutil.rmtree(out_dir)
-
     os.makedirs(out_dir, exist_ok=True)
-
-
-    env = await Venv.from_python(config.python, build_dir, 'env')
 
     cwd = os.getcwd()
     try:

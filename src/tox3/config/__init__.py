@@ -1,5 +1,6 @@
-from collections import namedtuple
 import logging
+import re
+from collections import namedtuple
 from pathlib import Path
 from typing import Dict, IO, List, Optional, Union
 
@@ -19,10 +20,14 @@ BuildSystem = namedtuple('BuildSystem', ['requires', 'backend'])
 
 class CoreToxConfig:
 
-    def __init__(self, root_dir, build_system: BuildSystem, _raw):
-        self.root_dir = root_dir
+    def __init__(self, options, build_system: BuildSystem, _raw):
+        self._options = options
         self._raw = _raw
         self._build_system = build_system
+
+    @property
+    def root_dir(self):
+        return self._options.root_dir
 
     @property
     def work_dir(self) -> Path:
@@ -49,15 +54,15 @@ class ToxConfig(CoreToxConfig):
         logging.debug('load config file %s', config_file)
         file_conf = toml.load(str(config_file) if isinstance(config_file, Path) else config_file)
 
-        root_dir = (config_file if isinstance(config_file, Path) else Path(config_file.name)).parents[0]
+        options.root_dir = (config_file if isinstance(config_file, Path) else Path(config_file.name)).parents[0]
 
         build_system = BuildSystem(file_conf['build-system']['requires'],
                                    file_conf['build-system']['build-backend'])
         tox = file_conf['tool']['tox3']
-        return cls(root_dir, build_system, tox)
+        return cls(options, build_system, tox)
 
-    def __init__(self, root_dir, build_system: BuildSystem, raw):
-        super().__init__(root_dir, build_system, raw)
+    def __init__(self, options, build_system: BuildSystem, raw):
+        super().__init__(options, build_system, raw)
 
         def _raw_env(env_name):
             base = {k: v for k, v in self._raw['env'].items() if not isinstance(v, dict)}
@@ -65,8 +70,8 @@ class ToxConfig(CoreToxConfig):
                 base.update(self._raw['env'][env_name])
             return base
 
-        self.build = BuildEnvConfig(root_dir, build_system, _raw_env('_build'), '_build')
-        self._envs: Dict[str, RunEnvConfig] = {k: RunEnvConfig(root_dir, build_system, _raw_env(k), k) for k in
+        self.build = BuildEnvConfig(options, build_system, _raw_env('_build'), '_build')
+        self._envs: Dict[str, RunEnvConfig] = {k: RunEnvConfig(options, build_system, _raw_env(k), k) for k in
                                                self.envs}
 
     @property
@@ -84,7 +89,17 @@ class EnvConfig(CoreToxConfig):
 
     @property
     def python(self):
-        return self._raw['basepython']
+        key = 'basepython'
+        if key in self._raw:
+            return self._raw[key]
+        match = re.match(r'py(\d)(\d)', self.name)
+        if match:
+            return 'python{}.{}'.format(match.group(1), match.group(2))
+        raise ValueError('no base python for {}'.format(self.name))
+
+    @property
+    def recreate(self):
+        return self._options.recreate
 
 
 class RunEnvConfig(EnvConfig):
@@ -92,6 +107,10 @@ class RunEnvConfig(EnvConfig):
     @property
     def commands(self):
         return self._raw['commands']
+
+    @property
+    def extras(self):
+        return self._raw.get('extras', [])
 
 
 class BuildEnvConfig(EnvConfig):

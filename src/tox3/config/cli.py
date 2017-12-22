@@ -14,6 +14,8 @@ def parse(args: List[str]):
     parser = argparse.ArgumentParser("tox3")
     pre_process_flags(parser)
     parser.add_argument('--config', type=argparse.FileType('r'), default=None)
+    parser.add_argument('-r', '--recreate', action='store_true', default=False,
+                        help='recreate the virtual environmentF')
     args = parser.parse_args(args)
 
     if args.config is None:

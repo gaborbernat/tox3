@@ -8,8 +8,10 @@ from tox3.venv import Venv
 
 
 async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig):
-    venv = await Venv.from_python(config.python, config.work_dir, config.name)
-    await venv.pip(deps=[str(build_config.built_package)], batch_name='project package')
+    venv = await Venv.from_python(config.python, config.work_dir, config.name, config.recreate)
+    extras = config.extras
+    package = '{}{}'.format(build_config.built_package, '[{}]'.format(','.join(extras)) if extras else '')
+    await venv.pip(deps=[package], batch_name='project package')
     for command in config.commands:
         logging.info('run: %s', command)
         env_vars = environment_variables(venv.bin_path)

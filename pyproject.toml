@@ -6,15 +6,15 @@ build-backend = 'setuptools:build_meta'
     envlist = ['py36', 'py35']
 
     [tool.tox3.env]
-        basepython = 'python3.6'
         description = 'run the unit tests with pytest under {basepython}'
-        commands = ["python -c \"import sys; print(sys.executable, sys.version)\" "]
+        extras = ["testing"]
 
     [tool.tox3.env._build]
         basepython = 'python3.6'
 
     [tool.tox3.env.py36]
-        basepython = 'python3.6'
+        commands = ["python -c \"import sys; print(sys.executable, sys.version)\" ",
+                    "pytest tests"]
 
     [tool.tox3.env.py35]
-        basepython = 'python3.5'
+        commands = ["python -c \"import sys; print(sys.executable, sys.version)\" "]

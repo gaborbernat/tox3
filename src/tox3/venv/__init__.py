@@ -1,4 +1,5 @@
 import logging
+import shutil
 from pathlib import Path
 
 from tox3.interpreters import get_interpreter
@@ -8,12 +9,15 @@ from tox3.util import run, PrintAndKeepLastLine
 class Venv:
 
     @classmethod
-    async def from_python(cls, python: str, dest_dir: Path, name: str):
+    async def from_python(cls, python: str, dest_dir: Path, name: str, recreate: bool):
         base_python_exe = get_interpreter(python)
         logging.info('use python %s', base_python_exe)
 
         logging.info('create venv %s at %r', name, dest_dir)
         env_dir = dest_dir / name
+        if recreate and env_dir.exists():
+            logging.debug('remove %r', env_dir)
+            shutil.rmtree(env_dir)
 
         script = Path(__file__).parent / '_venv.py'
 
