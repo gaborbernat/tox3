@@ -18,25 +18,17 @@ async def create_install_package(config: BuildEnvConfig):
 
     os.makedirs(out_dir, exist_ok=True)
 
-    for path in [config.root_dir / 'dist',
-                 config.root_dir / '.eggs']:
-        if path.exists():
-            logging.debug('clean %r', path)
-            shutil.rmtree(path)
 
-    env = Venv(build_dir, 'env', config.python)
+    env = await Venv.from_python(config.python, build_dir, 'env')
 
     cwd = os.getcwd()
     try:
         logging.debug('change cwd to %r', config.root_dir)
         os.chdir(config.root_dir)
 
-        logging.info('clean package dir')
-
-        await run([env.executable, 'setup.py', 'clean', '--all'])
         await env.pip(config.build_requires, batch_name='build requires')
 
-        printer = PrintAndKeepLastLine()
+        printer = PrintAndKeepLastLine(limit=1)
 
         script = f"""
 import {config.build_backend_full} as build
@@ -52,6 +44,8 @@ print(json.dumps(build_requires))
             logging.error('could not build package')
             raise SystemExit(-1)
 
+        await _clean(config, env.executable)
+
         logging.info('build package %r', config.root_dir)
         script = f"""
 import sys        
@@ -66,6 +60,19 @@ print(basename)
         else:
             logging.error('could not build package')
             raise SystemExit(-1)
+        await _clean(config, env.executable)
     finally:
         logging.debug('change cwd back to %r', cwd)
         os.chdir(cwd)
+
+
+async def _clean(config, executable):
+    logging.info('clean package dir')
+
+    await run([executable, 'setup.py', 'clean', '--all'])
+
+    for path in [config.root_dir / 'dist',
+                 config.root_dir / '.eggs']:
+        if path.exists():
+            logging.debug('clean %r', path)
+            shutil.rmtree(path)

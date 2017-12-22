@@ -8,7 +8,7 @@ from tox3.venv import Venv
 
 
 async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig):
-    venv = Venv(config.work_dir, config.name, config.python)
+    venv = await Venv.from_python(config.python, config.work_dir, config.name)
     await venv.pip(deps=[str(build_config.built_package)], batch_name='project package')
     for command in config.commands:
         logging.info('run: %s', command)

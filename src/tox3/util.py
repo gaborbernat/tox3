@@ -1,7 +1,8 @@
 import asyncio
-from functools import partial
 import json
 import logging
+from collections import deque
+from functools import partial
 
 
 async def _read_stream(stream, callback):
@@ -47,13 +48,19 @@ async def run(cmd, stdout=print_to_sdtout, stderr=print_to_sdterr, env=None, she
 
 class PrintAndKeepLastLine:
 
-    def __init__(self):
-        self.last = None
+    def __init__(self, limit):
+        self.elements = deque(maxlen=limit)
 
     def __call__(self, line):
-        self.last = line
+        self.elements.append(line.rstrip())
         print_to_sdtout(line)
 
     @property
     def json(self):
         return json.loads(self.last)
+
+    @property
+    def last(self):
+        last = self.elements.pop()
+        self.elements.append(last)
+        return last
