@@ -1,10 +1,8 @@
 import logging
 import re
 import shutil
-from pathlib import Path
-
 import sys
-import virtualenv
+from pathlib import Path
 
 from tox3.interpreters import get_interpreter
 from tox3.util import run, Buffer
@@ -28,11 +26,10 @@ class Venv:
         if recreate and env_dir.exists():
             logging.debug('remove %r', env_dir)
             shutil.rmtree(env_dir)
-
         if version_info[0] < 3:
             printer = Buffer(limit=None)
             await run([sys.executable, '-m', 'virtualenv', '--no-download', '--python',
-                       str(base_python_exe), str(env_dir)],
+                       base_python_exe, env_dir],
                       stdout=printer)
             pattern = re.compile(r'New python executable in (.*)')
             for line in printer.elements:
@@ -46,8 +43,9 @@ class Venv:
                 raise Exception('could not find executable')
         else:
             script = Path(__file__).parent / '_venv.py'
-            await run(cmd=[str(base_python_exe), str(script), str(env_dir)], stdout=printer)
+            await run(cmd=[base_python_exe, script, env_dir], stdout=printer)
             executable, bin_path = Path(printer.elements.pop()), Path(printer.elements.pop())
+
         return cls(executable, bin_path, version, version_info)
 
     def __init__(self, executable, bin_path, version, version_info):

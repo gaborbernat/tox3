@@ -116,6 +116,10 @@ class RunEnvConfig(EnvConfig):
     def extras(self):
         return self._raw.get('extras', [])
 
+    @property
+    def description(self):
+        return self._raw.get('description')
+
 
 class BuildEnvConfig(EnvConfig):
     _built_package: Optional[Path] = None

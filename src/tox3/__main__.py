@@ -7,7 +7,7 @@ import colorlog
 
 from tox3.build import create_install_package
 from tox3.config import load as load_config
-from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_verbose
+from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
 from tox3.env import run_env
 
 LOGGER = logging.getLogger()
@@ -18,7 +18,7 @@ def _clean_handlers(log):
         log.removeHandler(log_handler)
 
 
-def _setup_logging(verbose=None, quiet=False):
+def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str):
     """Setup logging."""
     _clean_handlers(LOGGER)
     if verbose is None:
@@ -27,8 +27,7 @@ def _setup_logging(verbose=None, quiet=False):
         LOGGER.addHandler(logging.NullHandler())
     else:
         level = VERBOSITY_TO_LOG_LEVEL.get(verbose, logging.DEBUG)
-        locate = 'pathname' if verbose >= 3 else 'module'
-        fmt = str("%(log_color)s[%(asctime)s] %(levelname)s [%({})s:%(lineno)d] %(message)s".format(locate))
+        fmt = f'%(log_color)s{logging_fmt}'
         formatter = colorlog.ColoredFormatter(fmt)
         stream_handler = logging.StreamHandler(stream=sys.stderr)
         stream_handler.setLevel(level)
@@ -38,8 +37,8 @@ def _setup_logging(verbose=None, quiet=False):
         logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
-def main(argv: List[str]):
-    _setup_logging(*get_verbose(argv))
+def main(argv: List[str]) -> None:
+    _setup_logging(*get_logging(argv))
 
     if sys.platform == 'win32':
         loop = asyncio.ProactorEventLoop()
