@@ -2,15 +2,16 @@
 import logging
 import os
 import shutil
+from typing import Optional
 
 from tox3.config import BuildEnvConfig
 from tox3.util import Buffer, run
 from tox3.venv import Venv
 
 
-async def create_install_package(config: BuildEnvConfig):
+async def create_install_package(config: BuildEnvConfig, prev_config: Optional[BuildEnvConfig]):
     env = await Venv.from_python(config.python, config.work_dir, '_build', config.recreate)
-    
+
     out_dir = config.work_dir / '_build' / '.out'
 
     if out_dir.exists():

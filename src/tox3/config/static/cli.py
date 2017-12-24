@@ -1,23 +1,27 @@
+"""configuration passed via the command line or the environment variables"""
 import argparse
 import logging
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
-VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
-                          1: logging.WARN,
-                          2: logging.INFO,
-                          3: logging.DEBUG}
+from tox3.config.util import VERBOSITY_TO_LOG_LEVEL
 
 
-def parse(args: List[str]):
+async def parse(options: List[str]) -> argparse.Namespace:
     parser = build_parser()
-    args = parser.parse_args(args)
-    logging.debug('CLI flags %r', args)
-    return args
+    options = parser.parse_args(options)
+
+    if isinstance(options.config, Path):
+        options.root_dir = options.config.parents[0]
+    else:
+        options.root_dir = Path(options.config.name).parents[0]
+
+    logging.debug('CLI flags %r', options)
+    return options
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser("tox3")
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
@@ -32,7 +36,7 @@ def build_parser():
     return parser
 
 
-def pre_process_flags(parser):
+def pre_process_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--logging', default='%(levelname)s %(message)s',
                         help='tools logging format', dest='logging')
     levels = ', '.join('{} -> {}'.format(c, logging.getLevelName(l)) for c, l in sorted(VERBOSITY_TO_LOG_LEVEL.items()))
@@ -44,7 +48,7 @@ def pre_process_flags(parser):
                        help='do not print log messages')
 
 
-def get_logging(argv):
+def get_logging(argv: List[str]) -> Tuple[bool, bool, str]:
     parser = argparse.ArgumentParser(add_help=False)
     pre_process_flags(parser)
     options, _ = parser.parse_known_args(argv)

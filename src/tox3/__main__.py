@@ -1,13 +1,14 @@
 import asyncio
 import logging
+import shelve
 import sys
-from typing import List
+from typing import List, Optional
 
 import colorlog
 
 from tox3.build import create_install_package
-from tox3.config import load as load_config
-from tox3.config.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
+from tox3.config import load as load_config, ToxConfig
+from tox3.config.static.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
 from tox3.env import run_env
 
 LOGGER = logging.getLogger()
@@ -57,12 +58,17 @@ def main(argv: List[str]) -> None:
 
 
 async def run(argv: List[str]):
-    config = await load_config(argv)
+    config: ToxConfig = await load_config(argv)
 
-    await create_install_package(config.build)
+    cache_file = str(config.work_dir / '.tox3.cache')
+    with shelve.open(cache_file) as cache:
+        prev_config: Optional[ToxConfig] = cache.get('config')
 
-    for env_name in config.run_environments:
-        await run_env(config.env(env_name), config.build)
+        await create_install_package(config.build, prev_config.build if prev_config else None)
+
+        for env_name in config.run_environments:
+            await run_env(config.env(env_name), config.build)
+        cache.__setitem__('config', config)
 
     return 0
 

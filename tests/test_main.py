@@ -3,7 +3,7 @@ from io import StringIO
 import pytest
 
 from tox3.__main__ import main
-from tox3.config.cli import build_parser
+from tox3.config.static.cli import build_parser
 
 
 def test_help(capsys):
