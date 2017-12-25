@@ -1,4 +1,0 @@
-colorlog
-pytest
-pytest-asyncio
-toml
