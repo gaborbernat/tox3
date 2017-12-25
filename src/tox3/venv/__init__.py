@@ -1,61 +1,114 @@
 import logging
+import pickle
 import re
-import shutil
 import sys
 from pathlib import Path
+from typing import NamedTuple, Optional, List
 
-from tox3.interpreters import get_interpreter
-from tox3.util import run, Buffer
+from tox3.interpreters import find_python, Python
+from tox3.util import run, CmdLineBufferPrinter, rm_dir
+
+
+class VenvParams(NamedTuple):
+    recreate: bool
+    dest_dir: Path
+    name: str
+    python: str
+
+    @property
+    def dir(self) -> Path:
+        return self.dest_dir / self.name
+
+    @property
+    def cache(self) -> Path:
+        return self.dir / f'.{self.name}.tox.cache'
+
+
+class VenvCore(NamedTuple):
+    root_dir: Path
+    bin_path: Path
+    executable: Path
 
 
 class Venv:
 
-    @classmethod
-    async def from_python(cls, python: str, dest_dir: Path, name: str, recreate: bool):
-        base_python_exe = get_interpreter(python)
-        logging.info('use python %s', base_python_exe)
+    def __init__(self, base: Python, venv_core: VenvCore):
+        self.core = venv_core
+        self.base = base
+        logging.info('virtual environment executable for %r ready at %r', self.base.python_name,
+                     self.core.executable)
 
-        printer = Buffer(limit=2)
-        await run([str(base_python_exe), "-c", "import sys; print(sys.version); print(tuple(sys.version_info))"],
-                  stdout=printer)
-        version_info = eval(printer.elements.pop(), {}, {})
-        version = printer.elements.pop()
-
-        logging.info('create venv %s at %r with %s', name, dest_dir, version)
-        env_dir = dest_dir / name
-        if recreate and env_dir.exists():
-            logging.debug('remove %r', env_dir)
-            shutil.rmtree(env_dir)
-        if version_info[0] < 3:
-            printer = Buffer(limit=None)
-            await run([sys.executable, '-m', 'virtualenv', '--no-download', '--python',
-                       base_python_exe, env_dir],
-                      stdout=printer)
-            pattern = re.compile(r'New python executable in (.*)')
-            for line in printer.elements:
-                logging.info(line)
-                match = re.match(pattern, line)
-                if match:
-                    executable = Path(match.group(1))
-                    bin_path = executable.parent
-                    break
-            else:
-                raise Exception('could not find executable')
-        else:
-            script = Path(__file__).parent / '_venv.py'
-            await run(cmd=[base_python_exe, script, env_dir], stdout=printer)
-            executable, bin_path = Path(printer.elements.pop()), Path(printer.elements.pop())
-
-        return cls(executable, bin_path, version, version_info)
-
-    def __init__(self, executable, bin_path, version, version_info):
-        self.executable = executable
-        self.bin_path = bin_path
-        self.version = version
-        self.version_info = version_info
-        logging.info('virtual environment executable ready at %r', executable)
-
-    async def pip(self, deps, batch_name=''):
+    async def pip(self, deps: List[str], batch_name: str = ''):
         if deps is not None:
             logging.info('pip install %s %r', batch_name, deps)
-            await run([str(self.executable), '-m', 'pip', 'install', *deps])
+            await run([self.core.executable, '-m', 'pip', 'install', *deps])
+
+
+async def setup(params: VenvParams) -> Venv:
+    """create a virtual environment"""
+    if params.recreate:
+        rm_dir(params.dir, 'recreate on')
+
+    cache = _load_cache(params)
+    if cache is not None:
+        return cache
+
+    base = await find_python(params.python)
+    venv_core = await _create_venv(base, params)
+
+    result = Venv(base, venv_core)
+
+    logging.debug(f'write virtualenv config {params.cache}')
+    with open(params.cache, mode='wb') as file:
+        pickle.dump(result, file)
+
+    return result
+
+
+def _env_deps_changed(params: VenvParams, venv: 'Venv'):
+    return params.python != venv.base.python_name
+
+
+def _load_cache(venv: VenvParams) -> Optional['Venv']:
+    if venv.cache.exists():
+        logging.debug(f'load already existing virtualenv at {venv.cache}')
+        with open(venv.cache, mode='rb') as file:
+            result: Venv = pickle.load(file)
+        if not _env_deps_changed(venv, result):
+            return result
+        rm_dir(venv.dir, 'env core dependencies changed')
+
+
+async def _create_venv(base_python: Python, venv: VenvParams) -> VenvCore:
+    logging.info('create venv %s at %r with %s', venv.name, venv.dir, base_python.version)
+    if base_python.major_version < 3:
+        venv_core = await _create_venv_python_2(base_python, venv.dir)
+    else:
+        venv_core = await _create_venv_python_3(base_python, venv.dir)
+    return venv_core
+
+
+async def _create_venv_python_3(base_python: Python, venv_dir: Path) -> VenvCore:
+    printer = CmdLineBufferPrinter(limit=2)
+    script = Path(__file__).parent / '_venv.py'
+    await run(cmd=[base_python.exe, script, venv_dir], stdout=printer)
+    executable, bin_path = Path(printer.elements.pop()), Path(printer.elements.pop())
+    return VenvCore(venv_dir, bin_path, executable)
+
+
+async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VenvCore:
+    printer = CmdLineBufferPrinter(limit=None)
+    await run([sys.executable, '-m', 'virtualenv', '--no-download', '--python',
+               base_python.exe, venv_dir],
+              stdout=printer)
+    pattern = re.compile(r'New python executable in (.*)')
+    for line in printer.elements:
+        logging.info(line)
+        match = re.match(pattern, line)
+        if match:
+            executable = Path(match.group(1))
+            bin_path = executable.parent
+            break
+    else:
+        raise Exception('could not find executable')
+    return VenvCore(venv_dir, bin_path, executable)

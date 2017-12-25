@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TextIO
+from io import StringIO
 
 import pytest
 
@@ -8,7 +8,7 @@ from tox3.config import from_toml
 
 @pytest.mark.asyncio
 async def test_load_from_io():
-    content = TextIO("""
+    content = StringIO("""
 [build-system]
 requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'

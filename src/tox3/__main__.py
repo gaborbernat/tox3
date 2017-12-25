@@ -1,8 +1,8 @@
 import asyncio
+import datetime
 import logging
-import shelve
 import sys
-from typing import List, Optional
+from typing import List
 
 import colorlog
 
@@ -58,19 +58,17 @@ def main(argv: List[str]) -> None:
 
 
 async def run(argv: List[str]):
-    config: ToxConfig = await load_config(argv)
+    start = datetime.datetime.now()
+    try:
+        config: ToxConfig = await load_config(argv)
 
-    cache_file = str(config.work_dir / '.tox3.cache')
-    with shelve.open(cache_file) as cache:
-        prev_config: Optional[ToxConfig] = cache.get('config')
-
-        await create_install_package(config.build, prev_config.build if prev_config else None)
+        await create_install_package(config.build)
 
         for env_name in config.run_environments:
             await run_env(config.env(env_name), config.build)
-        cache.__setitem__('config', config)
-
-    return 0
+        return 0
+    finally:
+        logging.info('finished %s', datetime.datetime.now() - start)
 
 
 def build_package():

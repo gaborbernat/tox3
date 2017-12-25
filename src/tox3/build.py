@@ -2,66 +2,79 @@
 import logging
 import os
 import shutil
-from typing import Optional
+from contextlib import contextmanager
+from pathlib import Path
 
 from tox3.config import BuildEnvConfig
-from tox3.util import Buffer, run
-from tox3.venv import Venv
+from tox3.util import CmdLineBufferPrinter, run, rm_dir
+from tox3.venv import setup as setup_venv, VenvParams, Venv
 
 
-async def create_install_package(config: BuildEnvConfig, prev_config: Optional[BuildEnvConfig]):
-    env = await Venv.from_python(config.python, config.work_dir, '_build', config.recreate)
-
-    out_dir = config.work_dir / '_build' / '.out'
-
-    if out_dir.exists():
-        logging.debug('clean package destination %r', out_dir)
-        shutil.rmtree(out_dir)
-    os.makedirs(out_dir, exist_ok=True)
-
+@contextmanager
+def change_dir(to_dir):
     cwd = os.getcwd()
+    logging.debug('change cwd to %r', to_dir)
+    os.chdir(to_dir)
     try:
-        logging.debug('change cwd to %r', config.root_dir)
-        os.chdir(config.root_dir)
+        yield
+    finally:
+        logging.debug('change cwd to %r', to_dir)
+        os.chdir(cwd)
 
-        await env.pip(config.build_requires, batch_name='build requires')
 
-        printer = Buffer(limit=1)
+async def create_install_package(config: BuildEnvConfig):
+    name = '_build'
+    env = await setup_venv(VenvParams(config.recreate, config.work_dir, name, config.python))
+    await env.pip(config.build_requires, batch_name='build requires')
 
-        script = f"""
-import {config.build_backend_full} as build
-import json
-build_requires = build.get_requires_for_build_wheel(None)
-print(json.dumps(build_requires))
-        """
-        result = await run([str(env.executable), '-c', script], stdout=printer)
+    out_dir = await _make_and_clean_out_dir(env)
 
-        if not result and printer.last:
-            await env.pip(printer.json, batch_name='setup requires')
-        else:
-            logging.error('could not build package')
-            raise SystemExit(-1)
+    with change_dir(config.root_dir):
+        config.for_build_requires = await _get_requires_for_build(env, config.build_type, config.build_backend_full)
+        await env.pip(config.for_build_requires, batch_name=f'for build requires ({config.build_type})')
+        await _clean(config, env.core.executable)
+        result = await _build(env, out_dir, config.build_type, config.build_backend_full)
+        config.built_package = result
+        await _clean(config, env.core.executable)
 
-        await _clean(config, env.executable)
 
-        logging.info('build package %r', config.root_dir)
-        script = f"""
+async def _build(env: Venv, out_dir: Path, build_type: str, build_backend_full: str):
+    printer = CmdLineBufferPrinter(limit=1)
+    script = f"""
 import sys        
-import {config.build_backend_full} as build
-basename = build.build_wheel(sys.argv[1])
+import {build_backend_full} as build
+basename = build.build_{build_type}(sys.argv[1])
 print(basename)
 """
-        result = await run([env.executable, '-c', script, str(out_dir)], stdout=printer)
-        if not result and printer.last:
-            config.built_package = out_dir / printer.last
-            logging.info('built %s', config.built_package)
+    await run([env.core.executable, '-c', script, out_dir], stdout=printer)
+    result = out_dir / printer.last
+    logging.info('built %s', result)
+    return result
+
+
+async def _get_requires_for_build(env: Venv, build_type: str, build_backend_full: str):
+    printer = CmdLineBufferPrinter(limit=1)
+    script = f"""
+import {build_backend_full} as build
+import json
+for_build_requires = build.get_requires_for_build_{build_type}(None)
+print(json.dumps(for_build_requires))
+        """
+    await run([str(env.core.executable), '-c', script], stdout=printer)
+    return printer.json
+
+
+async def _make_and_clean_out_dir(env: Venv):
+    out_dir = env.core.root_dir / '.out'
+    if out_dir.exists():
+        if not out_dir.is_dir():
+            rm_dir(out_dir, 'package destination is a file')
         else:
-            logging.error('could not build package')
-            raise SystemExit(-1)
-        await _clean(config, env.executable)
-    finally:
-        logging.debug('change cwd back to %r', cwd)
-        os.chdir(cwd)
+            for _ in out_dir.iterdir():
+                rm_dir(out_dir, 'package destination is not empty')
+                break
+    os.makedirs(out_dir, exist_ok=True)
+    return out_dir
 
 
 async def _clean(config, executable):

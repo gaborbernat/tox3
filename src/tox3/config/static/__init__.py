@@ -71,7 +71,7 @@ class EnvConfig(CoreToxConfig):
     def __init__(self,
                  _options: argparse.Namespace,
                  build_system: BuildSystem,
-                 file: Dict,
+                 file: FileConf,
                  name: str):
         super().__init__(_options, build_system, file)
         self.name = name
@@ -89,6 +89,14 @@ class EnvConfig(CoreToxConfig):
     @property
     def recreate(self) -> bool:
         return self._options.__getattribute__('recreate')
+
+    @property
+    def build_wheel(self) -> bool:
+        return self._file.get('build_wheel', True)
+
+    @property
+    def build_type(self) -> str:
+        return 'wheel' if self.build_wheel else 'sdist'
 
 
 class BuildEnvConfig(EnvConfig):

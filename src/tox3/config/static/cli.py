@@ -21,16 +21,23 @@ async def parse(options: List[str]) -> argparse.Namespace:
     return options
 
 
+class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
+
+    def __init__(self, prog):
+        super().__init__(prog, max_help_position=35, width=200)
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser("tox3")
+    parser = argparse.ArgumentParser("tox3", formatter_class=Tox3HelpFormatter)
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
     parser.add_argument('-c', '--config', type=argparse.FileType('r'), dest='config',
-                        default=(Path(os.getcwd()) / 'pyproject.toml'))
+                        default=(Path(os.getcwd()) / 'pyproject.toml'), metavar='file')
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
-    parser.add_argument('-e', '--environments', help='run only this run environments', nargs="+", type=str)
+    parser.add_argument('-e', '--envs', dest='environments', metavar='e',
+                        help='run only this run environments', nargs="+", type=str)
     parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
                         help="show list of all defined environments (with description if verbose)")
     return parser
