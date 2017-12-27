@@ -6,10 +6,10 @@ from typing import List
 
 import colorlog
 
-from tox3.build import create_install_package
-from tox3.config import load as load_config, ToxConfig
-from tox3.config.static.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
-from tox3.env import run_env
+from .build import create_install_package
+from .config import load as load_config, ToxConfig
+from .config.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
+from .env import run_env
 
 LOGGER = logging.getLogger()
 

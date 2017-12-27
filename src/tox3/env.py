@@ -2,7 +2,7 @@ import logging
 import os
 from functools import partial
 
-from tox3.config import RunEnvConfig, BuildEnvConfig
+from .config import RunEnvConfig, BuildEnvConfig
 from tox3.util import print_to_sdtout, run
 from tox3.venv import setup as setup_venv, VenvParams
 

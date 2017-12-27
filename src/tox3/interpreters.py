@@ -4,7 +4,7 @@ from typing import NamedTuple, Tuple
 
 import py
 
-from tox3.util import CmdLineBufferPrinter, run
+from .util import CmdLineBufferPrinter, run
 
 
 class Python(NamedTuple):

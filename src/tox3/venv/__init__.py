@@ -28,6 +28,7 @@ class VenvCore(NamedTuple):
     root_dir: Path
     bin_path: Path
     executable: Path
+    site_package: Path
 
 
 class Venv:
@@ -93,7 +94,7 @@ async def _create_venv_python_3(base_python: Python, venv_dir: Path) -> VenvCore
     script = Path(__file__).parent / '_venv.py'
     await run(cmd=[base_python.exe, script, venv_dir], stdout=printer)
     executable, bin_path = Path(printer.elements.pop()), Path(printer.elements.pop())
-    return VenvCore(venv_dir, bin_path, executable)
+    return VenvCore(venv_dir, bin_path, executable, await site_package(executable))
 
 
 async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VenvCore:
@@ -111,4 +112,11 @@ async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VenvCore
             break
     else:
         raise Exception('could not find executable')
-    return VenvCore(venv_dir, bin_path, executable)
+    return VenvCore(venv_dir, bin_path, executable, await site_package(executable))
+
+
+async def site_package(executable: Path) -> Path:
+    printer = CmdLineBufferPrinter(limit=1)
+    await run(cmd=[executable, '-c', 'import site; import json; print(json.dumps(site.getsitepackages()))'],
+              stdout=printer)
+    return Path(printer.json[-1])

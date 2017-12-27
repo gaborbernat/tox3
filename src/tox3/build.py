@@ -5,9 +5,9 @@ import shutil
 from contextlib import contextmanager
 from pathlib import Path
 
-from tox3.config import BuildEnvConfig
-from tox3.util import CmdLineBufferPrinter, run, rm_dir
-from tox3.venv import setup as setup_venv, VenvParams, Venv
+from .config import BuildEnvConfig
+from .util import CmdLineBufferPrinter, run, rm_dir
+from .venv import setup as setup_venv, VenvParams, Venv
 
 
 @contextmanager
@@ -30,20 +30,23 @@ async def create_install_package(config: BuildEnvConfig):
     out_dir = await _make_and_clean_out_dir(env)
 
     with change_dir(config.root_dir):
-        config.for_build_requires = await _get_requires_for_build(env, config.build_type, config.build_backend_full)
+        config.for_build_requires = await _get_requires_for_build(env, config.build_type,
+                                                                  config.build_backend_base,
+                                                                  config.build_backend_full)
         await env.pip(config.for_build_requires, batch_name=f'for build requires ({config.build_type})')
         await _clean(config, env.core.executable)
-        result = await _build(env, out_dir, config.build_type, config.build_backend_full)
+        result = await _build(env, out_dir, config.build_type,
+                              config.build_backend_base, config.build_backend_full)
         config.built_package = result
         await _clean(config, env.core.executable)
 
 
-async def _build(env: Venv, out_dir: Path, build_type: str, build_backend_full: str):
+async def _build(env: Venv, out_dir: Path, build_type: str, build_backend_base: str, build_backend_full: str):
     printer = CmdLineBufferPrinter(limit=1)
     script = f"""
-import sys        
-import {build_backend_full} as build
-basename = build.build_{build_type}(sys.argv[1])
+import sys
+import {build_backend_base}        
+basename = {build_backend_full}.build_{build_type}(sys.argv[1])
 print(basename)
 """
     await run([env.core.executable, '-c', script, out_dir], stdout=printer)
@@ -52,12 +55,12 @@ print(basename)
     return result
 
 
-async def _get_requires_for_build(env: Venv, build_type: str, build_backend_full: str):
+async def _get_requires_for_build(env: Venv, build_type: str, build_backend_base: str, build_backend_full: str):
     printer = CmdLineBufferPrinter(limit=1)
     script = f"""
-import {build_backend_full} as build
+import {build_backend_base}        
 import json
-for_build_requires = build.get_requires_for_build_{build_type}(None)
+for_build_requires = {build_backend_full}.get_requires_for_build_{build_type}(None)
 print(json.dumps(for_build_requires))
         """
     await run([str(env.core.executable), '-c', script], stdout=printer)

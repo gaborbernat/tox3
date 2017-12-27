@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import List, Tuple
 
-from tox3.config.util import VERBOSITY_TO_LOG_LEVEL
+from .util import VERBOSITY_TO_LOG_LEVEL
 
 
 async def parse(options: List[str]) -> argparse.Namespace:
