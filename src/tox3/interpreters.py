@@ -7,16 +7,6 @@ import py
 from .util import CmdLineBufferPrinter, run
 
 
-class Python(NamedTuple):
-    python_name: str
-    exe: Path
-    version: str
-    version_info: Tuple[int, int, int, str]
-
-    @property
-    def major_version(self) -> int:
-        return self.version_info[0]
-
 
 async def find_python(python: str) -> Python:
     base_python_exe = get_interpreter(python)

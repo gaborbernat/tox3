@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from typing import NamedTuple, Optional, List
 
+from tox3.config.models import VenvCore
 from tox3.interpreters import find_python, Python
 from tox3.util import run, CmdLineBufferPrinter, rm_dir
 
@@ -22,13 +23,6 @@ class VenvParams(NamedTuple):
     @property
     def cache(self) -> Path:
         return self.dir / f'.{self.name}.tox.cache'
-
-
-class VenvCore(NamedTuple):
-    root_dir: Path
-    bin_path: Path
-    executable: Path
-    site_package: Path
 
 
 class Venv:
