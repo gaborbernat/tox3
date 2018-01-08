@@ -14,4 +14,4 @@ build-backend = 'setuptools.build_meta'
   basepython = 'python3.6'
 
 [tool.tox3.env.py36]
-  commands = ['pytest --cov="<envsitepackagesdir>/tox3" --cov-report=term:skip-covered tests']
+  commands = ['pytest --cov="<envsitepackagesdir>/tox3" --cov-report=term-missing:skip-covered tests']
