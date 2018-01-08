@@ -1,4 +1,5 @@
 import logging
+import os
 import pickle
 import re
 import sys
@@ -42,7 +43,10 @@ class Venv:
     async def pip(self, deps: List[str], batch_name: str = ''):
         if deps is not None:
             logging.info('pip install %s %r', batch_name, deps)
-            await run([self.core.executable, '-m', 'pip', 'install', '-U', *deps])
+            os_env = os.environ.copy()
+            if 'PYTHONPATH' in os_env:
+                del os_env['PYTHONPATH']
+            await run([self.core.executable, '-m', 'pip', 'install', '-U', *deps], env=os_env)
 
 
 async def setup(params: VenvParams) -> Venv:

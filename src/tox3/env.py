@@ -31,5 +31,5 @@ def environment_variables(bin_path):
 
     if 'PYTHONPATH' in os_env:
         del os_env['PYTHONPATH']
-        
+
     return os_env

@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Callable
 
 import pytest
 
@@ -20,7 +20,7 @@ class Project:
 
 
 @pytest.fixture(name='project')
-def test_project_fixture(tmpdir: Path, monkeypatch):
+def project_fixture(tmpdir: Path, monkeypatch):
     def project_factory(files: Dict[Path, str]):
         for file, content in files.items():
             file_path: Path = Path(tmpdir / file)
@@ -33,3 +33,11 @@ def test_project_fixture(tmpdir: Path, monkeypatch):
         return Project(tmpdir)
 
     return project_factory
+
+
+@pytest.fixture(name='conf')
+def conf_fixture(project) -> Callable[[str], Project]:
+    def conf_factory(conf: str) -> Project:
+        return project(files={'pyproject.toml': conf})
+
+    return conf_factory
