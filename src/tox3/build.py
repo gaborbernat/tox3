@@ -34,6 +34,7 @@ async def create_install_package(config: BuildEnvConfig):
         config.for_build_requires = await _get_requires_for_build(env, config.build_type,
                                                                   config.build_backend_base,
                                                                   config.build_backend_full)
+        logging.info(config.for_build_requires)
         await env.pip(config.for_build_requires, batch_name=f'for build requires ({config.build_type})')
         await _clean(config, env.core.executable)
         result = await _build(env, out_dir, config.build_type,

@@ -23,5 +23,5 @@ class BuildEnvConfig(EnvConfig):
 
     @for_build_requires.setter
     def for_build_requires(self, value: List[str]):
-        self._built_package = value
+        self._for_build_requires = value
 
