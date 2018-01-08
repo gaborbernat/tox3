@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from typing import NamedTuple, Optional, List
 
-from tox3.config.models import VenvCore
 from tox3.interpreters import find_python, Python
 from tox3.util import run, CmdLineBufferPrinter, rm_dir
 
@@ -25,6 +24,13 @@ class VenvParams(NamedTuple):
         return self.dir / f'.{self.name}.tox.cache'
 
 
+class VenvCore(NamedTuple):
+    root_dir: Path
+    bin_path: Path
+    executable: Path
+    site_package: Path
+
+
 class Venv:
 
     def __init__(self, base: Python, venv_core: VenvCore):
@@ -36,7 +42,7 @@ class Venv:
     async def pip(self, deps: List[str], batch_name: str = ''):
         if deps is not None:
             logging.info('pip install %s %r', batch_name, deps)
-            await run([self.core.executable, '-m', 'pip', 'install', *deps])
+            await run([self.core.executable, '-m', 'pip', 'install', '-U', *deps])
 
 
 async def setup(params: VenvParams) -> Venv:

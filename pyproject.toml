@@ -14,4 +14,4 @@ build-backend = 'setuptools.build_meta'
   basepython = 'python3.6'
 
 [tool.tox3.env.py36]
-  commands = ['pytest tests <envsitepackagedir>']
+  commands = ['pytest --cov="<envsitepackagesdir>/tox3" tests']

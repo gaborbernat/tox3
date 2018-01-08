@@ -3,12 +3,12 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Iterable
 
 from .util import VERBOSITY_TO_LOG_LEVEL
 
 
-async def parse(options: List[str]) -> argparse.Namespace:
+async def parse(options: Iterable[str]) -> argparse.Namespace:
     parser = build_parser()
     options = parser.parse_args(options)
 
@@ -55,7 +55,7 @@ def pre_process_flags(parser: argparse.ArgumentParser) -> None:
                        help='do not print log messages')
 
 
-def get_logging(argv: List[str]) -> Tuple[bool, bool, str]:
+def get_logging(argv: Iterable[str]) -> Tuple[bool, bool, str]:
     parser = argparse.ArgumentParser(add_help=False)
     pre_process_flags(parser)
     options, _ = parser.parse_known_args(argv)

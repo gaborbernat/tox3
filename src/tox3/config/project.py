@@ -6,9 +6,9 @@ from typing import IO, Union, Tuple, Dict, Any
 
 import toml
 
-BuildSystem = namedtuple('BuildSystem', ['requires', 'backend'])
-
 FileConf = Dict[str, Any]
+
+BuildSystem = namedtuple('BuildSystem', ['requires', 'backend'])
 
 
 async def from_toml(config_file: Union[Path, IO[str]]) -> Tuple[BuildSystem, FileConf]:

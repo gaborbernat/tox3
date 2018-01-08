@@ -25,6 +25,7 @@ def change_dir(to_dir):
 async def create_install_package(config: BuildEnvConfig):
     name = '_build'
     env = await setup_venv(VenvParams(config.recreate, config.work_dir, name, config.python))
+    config.venv = env
     await env.pip(config.build_requires, batch_name='build requires')
 
     out_dir = await _make_and_clean_out_dir(env)

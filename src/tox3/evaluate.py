@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import logging
 import sys
-from typing import List
+from typing import Iterable
 
 import colorlog
 
@@ -38,7 +38,7 @@ def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str):
         logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
-def main(argv: List[str]) -> None:
+def main(argv: Iterable[str]) -> None:
     _setup_logging(*get_logging(argv))
 
     if sys.platform == 'win32':
@@ -57,7 +57,7 @@ def main(argv: List[str]) -> None:
         loop.close()
 
 
-async def run(argv: List[str]):
+async def run(argv: Iterable[str]):
     start = datetime.datetime.now()
     try:
         config: ToxConfig = await load_config(argv)
@@ -66,9 +66,13 @@ async def run(argv: List[str]):
 
         for env_name in config.run_environments:
             await run_env(config.env(env_name), config.build)
-        return 0
+        result = 0
+    except BaseException:
+        result = 1
+        raise
     finally:
         logging.info('finished %s', datetime.datetime.now() - start)
+    return result
 
 
 def build_package():

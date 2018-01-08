@@ -1,9 +1,9 @@
 from typing import Dict
 
-from tox3.config import BuildSystem
 from .core import CoreToxConfig
 from .env_build import BuildEnvConfig
 from .env_run import RunEnvConfig
+from ..project import BuildSystem
 
 
 class ToxConfig(CoreToxConfig):

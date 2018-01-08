@@ -20,6 +20,8 @@ class Substitute:
                     continue
                 handled.add(key)
                 value = self.__getattribute__(key)
+                if not isinstance(value, str):
+                    value = str(value)
                 arg = arg.replace(f'<{key}>', value)
             except AttributeError:
                 pass
