@@ -3,8 +3,9 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import List, Tuple, Iterable
+from typing import Tuple, Iterable
 
+import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
 
 
@@ -28,7 +29,8 @@ class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser("tox3", formatter_class=Tox3HelpFormatter)
+    parser = argparse.ArgumentParser("tox3", formatter_class=Tox3HelpFormatter,
+                                     epilog=f'{tox3.__version__} from {tox3.__file__}')
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
