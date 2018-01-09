@@ -38,7 +38,11 @@ async def env_setup(build_config: BuildEnvConfig, config: RunEnvConfig, env: VEn
                                          config))
 
     extras = config.extras
-    package = '{}{}'.format(build_config.built_package, '[{}]'.format(','.join(extras)) if extras else '')
+    if config.usedevelop:
+        project_package = config.root_dir
+    else:
+        project_package = build_config.built_package
+    package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
     await env.install(install_params(f'project',
                                      [package],
                                      config,

@@ -1,4 +1,5 @@
-from typing import List, Optional, cast
+import shlex
+from typing import List, Optional
 
 from tox3.util import list_to_cmd
 from .env import EnvConfig
@@ -8,7 +9,8 @@ class RunEnvConfig(EnvConfig):
 
     @property
     def commands(self) -> List[str]:
-        return cast(List[str], self._file.get('commands', []))
+        commands: List[str] = self._file.get('commands', [])
+        return [list_to_cmd(shlex.split(command)) for command in commands]
 
     @property
     def extras(self) -> List[str]:
