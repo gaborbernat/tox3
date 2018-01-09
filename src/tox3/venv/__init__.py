@@ -1,55 +1,44 @@
 import logging
 import os
+from pathlib import Path
 import pickle
 import re
+import shlex
 import sys
-from pathlib import Path
-from typing import NamedTuple, Optional, List
+from typing import Mapping, Optional
 
-from tox3.interpreters import find_python, Python
-from tox3.util import run, CmdLineBufferPrinter, rm_dir
-
-
-class VenvParams(NamedTuple):
-    recreate: bool
-    dest_dir: Path
-    name: str
-    python: str
-
-    @property
-    def dir(self) -> Path:
-        return self.dest_dir / self.name
-
-    @property
-    def cache(self) -> Path:
-        return self.dir / f'.{self.name}.tox.cache'
+from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
+from tox3.interpreters import Python, find_python
+from tox3.util import CmdLineBufferPrinter, rm_dir, run
 
 
-class VenvCore(NamedTuple):
-    root_dir: Path
-    bin_path: Path
-    executable: Path
-    site_package: Path
+def strip_env_vars(bin_path: Path) -> Mapping[str, str]:
+    os_env = os.environ.copy()
+    paths = os_env.get('PATH', '').split(os.pathsep)
+    paths = [str(bin_path)] + paths
+    os_env['PATH'] = os.pathsep.join(paths)
+    if 'PYTHONPATH' in os_env:
+        del os_env['PYTHONPATH']
+    return os_env
 
 
-class Venv:
+class VEnv:
 
-    def __init__(self, base: Python, venv_core: VenvCore) -> None:
-        self.core: VenvCore = venv_core
-        self.base: Python = base
-        logging.info('virtual environment executable for %r ready at %r', self.base.python_name,
-                     self.core.executable)
+    def __init__(self, python: Python, params: VEnvParams) -> None:
+        self.params: VEnvParams = params
+        self.python: Python = python
+        logging.info('virtual environment executable for %r ready at %r', self.python.python_name,
+                     self.params.executable)
 
-    async def pip(self, deps: List[str], batch_name: str = '') -> None:
-        if deps is not None:
-            logging.info('pip install %s %r', batch_name, deps)
-            os_env = os.environ.copy()
-            if 'PYTHONPATH' in os_env:
-                del os_env['PYTHONPATH']
-            await run([self.core.executable, '-m', 'pip', 'install', '-U', *deps], env=os_env)
+    async def install(self, params: Install) -> None:
+        if params.packages is not None:
+            cmd = '{} {} {}'.format(params.base_cmd,
+                                    '-e' if params.use_develop else '',
+                                    ' '.join(shlex.quote(dep) for dep in params.packages))
+            await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True)
 
 
-async def setup(params: VenvParams) -> Venv:
+async def setup(params: VEnvCreateParam) -> VEnv:
     """create a virtual environment"""
     if params.recreate:
         rm_dir(params.dir, 'recreate on')
@@ -61,7 +50,7 @@ async def setup(params: VenvParams) -> Venv:
     base = await find_python(params.python)
     venv_core = await _create_venv(base, params)
 
-    result = Venv(base, venv_core)
+    result = VEnv(base, venv_core)
 
     logging.debug(f'write virtualenv config {params.cache}')
     with open(params.cache, mode='wb') as file:
@@ -70,22 +59,22 @@ async def setup(params: VenvParams) -> Venv:
     return result
 
 
-def _env_deps_changed(params: VenvParams, venv: Venv) -> bool:
-    return params.python != venv.base.python_name
+def _env_deps_changed(params: VEnvCreateParam, venv: VEnv) -> bool:
+    return params.python != venv.python.python_name
 
 
-def _load_cache(venv: VenvParams) -> Optional[Venv]:
+def _load_cache(venv: VEnvCreateParam) -> Optional[VEnv]:
     if venv.cache.exists():
         logging.debug(f'load already existing virtualenv at {venv.cache}')
         with open(venv.cache, mode='rb') as file:
-            result: Venv = pickle.load(file)
+            result: VEnv = pickle.load(file)
         if not _env_deps_changed(venv, result):
             return result
         rm_dir(venv.dir, 'env core dependencies changed')
     return None
 
 
-async def _create_venv(base_python: Python, venv: VenvParams) -> VenvCore:
+async def _create_venv(base_python: Python, venv: VEnvCreateParam) -> VEnvParams:
     logging.info('create venv %s at %r with %s', venv.name, venv.dir, base_python.version)
     if base_python.major_version < 3:
         venv_core = await _create_venv_python_2(base_python, venv.dir)
@@ -94,15 +83,15 @@ async def _create_venv(base_python: Python, venv: VenvParams) -> VenvCore:
     return venv_core
 
 
-async def _create_venv_python_3(base_python: Python, venv_dir: Path) -> VenvCore:
+async def _create_venv_python_3(base_python: Python, venv_dir: Path) -> VEnvParams:
     printer = CmdLineBufferPrinter(limit=2)
     script = Path(__file__).parent / '_venv.py'
     await run(cmd=[base_python.exe, script, venv_dir], stdout=printer)
     executable, bin_path = Path(printer.elements.pop()), Path(printer.elements.pop())
-    return VenvCore(venv_dir, bin_path, executable, await site_package(executable))
+    return VEnvParams(venv_dir, bin_path, executable, await site_package(executable))
 
 
-async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VenvCore:
+async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VEnvParams:
     printer = CmdLineBufferPrinter(limit=None)
     await run([sys.executable, '-m', 'virtualenv', '--no-download', '--python',
                base_python.exe, venv_dir],
@@ -117,7 +106,7 @@ async def _create_venv_python_2(base_python: Python, venv_dir: Path) -> VenvCore
             break
     else:
         raise Exception('could not find executable')
-    return VenvCore(venv_dir, bin_path, executable, await site_package(executable))
+    return VEnvParams(venv_dir, bin_path, executable, await site_package(executable))
 
 
 async def site_package(executable: Path) -> Path:

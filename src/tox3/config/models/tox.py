@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 from typing import Dict, List, cast
 
 from .core import CoreToxConfig
@@ -12,8 +13,9 @@ class ToxConfig(CoreToxConfig):
     def __init__(self,
                  options: argparse.Namespace,
                  build_system: BuildSystem,
-                 file: FileConf) -> None:
-        super().__init__(options, build_system, file)
+                 file: FileConf,
+                 work_dir: Path) -> None:
+        super().__init__(options, build_system, file, work_dir)
 
         def _raw_env(env_name: str) -> FileConf:
             base = {k: v for k, v in self._file['env'].items() if not isinstance(v, dict)}
@@ -21,15 +23,29 @@ class ToxConfig(CoreToxConfig):
                 base.update(self._file['env'][env_name])
             return base
 
-        self.build = BuildEnvConfig(options, build_system, _raw_env(BuildEnvConfig.NAME), BuildEnvConfig.NAME)
-        self._envs: Dict[str, RunEnvConfig] = {k: RunEnvConfig(options, build_system, _raw_env(k), k) for k in
-                                               self.envs}
+        self.build = BuildEnvConfig(options,
+                                    build_system,
+                                    _raw_env(BuildEnvConfig.NAME),
+                                    work_dir,
+                                    BuildEnvConfig.NAME)
+        self._envs: Dict[str, RunEnvConfig] = {k: RunEnvConfig(options,
+                                                               build_system,
+                                                               _raw_env(k),
+                                                               work_dir, k) for k in
+                                               self.all_envs}
 
     @property
     def envs(self) -> List[str]:
-        explicit: List[str] = cast(List[str], self._file['envlist'])
-        implicit: List[str] = [k for k, v in self._file['env'].items() if isinstance(v, dict) and k not in explicit]
+        return cast(List[str], self._file['envlist'])
+
+    @property
+    def all_envs(self):
+        explicit: List[str] = self.envs
+        implicit: List[str] = [k for k, v in self._file['env'].items() if self._is_extra_env(k, v)]
         return explicit + implicit
+
+    def _is_extra_env(self, key, conf):
+        return isinstance(conf, dict) and key not in self.envs and key != BuildEnvConfig.NAME
 
     @property
     def run_environments(self) -> List[str]:

@@ -6,10 +6,9 @@ from typing import Sequence
 
 import colorlog  # type: ignore
 
-from .build import create_install_package
-from .config import load as load_config, ToxConfig
+from .config import ToxConfig, load as load_config
 from .config.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
-from .env import run_env
+from .env import create_install_package, run_env
 
 LOGGER = logging.getLogger()
 
@@ -48,10 +47,15 @@ def main(argv: Sequence[str]) -> int:
         loop = asyncio.get_event_loop()
     logging.debug('got event loop %r', loop)
 
+    # noinspection PyBroadException
     try:
         result = loop.run_until_complete(run(argv))
         logging.debug('done with %s', result)
         return result
+    except SystemExit as exc:
+        return exc.code
+    except Exception:
+        logging.exception('failure')
     finally:
 
         loop.close()
@@ -59,6 +63,7 @@ def main(argv: Sequence[str]) -> int:
 
 async def run(argv: Sequence[str]) -> int:
     start = datetime.datetime.now()
+    # noinspection PyUnusedLocal
     result: int = 1
     try:
         config: ToxConfig = await load_config(argv)

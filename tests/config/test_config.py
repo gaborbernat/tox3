@@ -15,19 +15,27 @@ build-backend = 'setuptools.build_meta'
 
 [tool.tox3.env]
   basepython = 'python3.6'
-  deps = ["pytest"]
-  description = 'run the unit tests with pytest'
 
 [tool.tox3.env.py36]
+  deps = ["pytest"]
+  description = 'run the unit tests with pytest'
   commands = ["pytest tests"]
+[tool.tox3.env.dev]
+  commands = [""]
 ''')
     conf: ToxConfig = await env.conf()
 
-    assert conf.build_backend == 'setuptools.build_meta'
-    assert conf.build_requires == ['setuptools >= 38.2.4']
+    assert conf.build.build_backend == 'setuptools.build_meta'
+    assert conf.build.build_requires == ['setuptools >= 38.2.4']
 
     assert conf.envs == ['py36']
+    assert conf.all_envs == ['py36', 'dev']
 
     py36 = conf.env('py36')
     assert py36.description == 'run the unit tests with pytest'
     assert py36.commands == ['pytest tests']
+
+    dev = conf.env('dev')
+    assert dev.description is None
+    assert dev.commands == ['']
+    assert dev.deps == []

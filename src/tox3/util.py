@@ -1,12 +1,12 @@
 import asyncio
-import json
-import logging
-import shutil
 from collections import deque
 from datetime import datetime
 from functools import partial
+import json
+import logging
 from pathlib import Path
-from typing import Mapping, Callable, Any, Optional, Deque, Union, Iterable
+import shutil
+from typing import Any, Callable, Deque, Iterable, Mapping, Optional, Union
 
 Cmd = Union[Iterable[Union[str, Path]]]
 
@@ -62,11 +62,11 @@ async def _stream_subprocess(cmd: Cmd,
     start = datetime.now()
     process = await runner(stdout=asyncio.subprocess.PIPE,
                            stderr=asyncio.subprocess.PIPE,
+                           stdin=None,
                            env=env)
-    await asyncio.wait([
-        _read_stream(process.stdout, stdout_cb),
-        _read_stream(process.stderr, stderr_cb)
-    ])
+    handlers = [_read_stream(process.stdout, stdout_cb),
+                _read_stream(process.stderr, stderr_cb)]
+    await asyncio.wait(handlers)
     result_repr: Optional[str] = None
     try:
         result = await process.wait()

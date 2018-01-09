@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 from .env import EnvConfig
 
@@ -25,3 +25,29 @@ class BuildEnvConfig(EnvConfig):
     def for_build_requires(self, value: List[str]) -> None:
         self._for_build_requires = value
 
+    @property
+    def build_wheel(self) -> bool:
+        return self._file.get('build_wheel', True)
+
+    @property
+    def build_type(self) -> str:
+        return 'wheel' if self.build_wheel else 'sdist'
+
+    @property
+    def build_requires(self) -> List[str]:
+        return self._build_system.requires
+
+    @property
+    def build_backend_full(self) -> str:
+        return self._build_system.backend.replace(':', '.')
+
+    @property
+    def build_backend(self) -> str:
+        return self._build_system.backend
+
+    @property
+    def build_backend_base(self) -> str:
+        at = self.build_backend.find(':')
+        if at == -1:
+            at = len(self.build_backend)
+        return self.build_backend[:at]

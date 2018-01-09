@@ -1,14 +1,16 @@
 """build the project"""
+from contextlib import contextmanager
 import logging
 import os
-import shutil
-from contextlib import contextmanager
 from pathlib import Path
-from typing import List, cast, Generator
+import shutil
+from typing import Generator, List, cast
 
-from .config import BuildEnvConfig
-from .util import CmdLineBufferPrinter, run, rm_dir
-from .venv import setup as setup_venv, VenvParams, Venv
+from tox3.config import BuildEnvConfig
+from tox3.config.models.venv import VEnvCreateParam
+from tox3.env.util import install_params
+from tox3.util import CmdLineBufferPrinter, rm_dir, run
+from tox3.venv import VEnv, setup as setup_venv
 
 
 @contextmanager
@@ -25,9 +27,11 @@ def change_dir(to_dir: Path) -> Generator[None, None, None]:
 
 async def create_install_package(config: BuildEnvConfig) -> None:
     name = '_build'
-    env = await setup_venv(VenvParams(config.recreate, config.work_dir, name, config.python))
+    env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python))
     config.venv = env
-    await env.pip(config.build_requires, batch_name='build requires')
+    await env.install(install_params(f'build requires',
+                                     config.build_requires,
+                                     config))
 
     out_dir = await _make_and_clean_out_dir(env)
 
@@ -35,15 +39,18 @@ async def create_install_package(config: BuildEnvConfig) -> None:
         config.for_build_requires = await _get_requires_for_build(env, config.build_type,
                                                                   config.build_backend_base,
                                                                   config.build_backend_full)
-        await env.pip(config.for_build_requires, batch_name=f'for build requires ({config.build_type})')
-        await _clean(config, env.core.executable)
+        await env.install(install_params(f'for build requires',
+                                         config.for_build_requires,
+                                         config))
+
+        await _clean(config, env.params.executable)
         result = await _build(env, out_dir, config.build_type,
                               config.build_backend_base, config.build_backend_full)
         config.built_package = result
-        await _clean(config, env.core.executable)
+        await _clean(config, env.params.executable)
 
 
-async def _build(env: Venv,
+async def _build(env: VEnv,
                  out_dir: Path,
                  build_type: str,
                  build_backend_base: str,
@@ -55,13 +62,13 @@ import {build_backend_base}
 basename = {build_backend_full}.build_{build_type}(sys.argv[1])
 print(basename)
 """
-    await run([env.core.executable, '-c', script, out_dir], stdout=printer)
+    await run([env.params.executable, '-c', script, out_dir], stdout=printer)
     result = out_dir / printer.last
     logging.info('built %s', result)
     return result
 
 
-async def _get_requires_for_build(env: Venv,
+async def _get_requires_for_build(env: VEnv,
                                   build_type: str,
                                   build_backend_base: str,
                                   build_backend_full: str) -> List[str]:
@@ -72,12 +79,12 @@ import json
 for_build_requires = {build_backend_full}.get_requires_for_build_{build_type}(None)
 print(json.dumps(for_build_requires))
         """
-    await run([str(env.core.executable), '-c', script], stdout=printer)
+    await run([str(env.params.executable), '-c', script], stdout=printer)
     return cast(List[str], printer.json)
 
 
-async def _make_and_clean_out_dir(env: Venv) -> Path:
-    out_dir = env.core.root_dir / '.out'
+async def _make_and_clean_out_dir(env: VEnv) -> Path:
+    out_dir = env.params.root_dir / '.out'
     if out_dir.exists():
         if not out_dir.is_dir():
             rm_dir(out_dir, 'package destination is a file')
@@ -85,7 +92,7 @@ async def _make_and_clean_out_dir(env: Venv) -> Path:
             for _ in out_dir.iterdir():
                 rm_dir(out_dir, 'package destination is not empty')
                 break
-    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(str(out_dir), exist_ok=True)
     return out_dir
 
 

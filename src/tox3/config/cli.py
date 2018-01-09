@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Tuple, Sequence
+from typing import Sequence, Tuple
 
 import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
@@ -45,6 +45,7 @@ def build_parser() -> argparse.ArgumentParser:
                         help='run only this run environments', nargs="+", type=str)
     parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
                         help="show list of all defined environments (with description if verbose)")
+    parser.add_argument('args', nargs='*', help='additional arguments available to command positional substitution')
     return parser
 
 

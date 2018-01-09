@@ -1,26 +1,35 @@
 import os
 from pathlib import Path
-from typing import Dict, Callable
+import shutil
+from typing import Callable, Dict, Optional
 
 import pytest
 
-from tox3.evaluate import run, load_config, ToxConfig
+from tox3.evaluate import ToxConfig, load_config, run
 
 
 class Project:
 
     def __init__(self, root_dir: Path) -> None:
         self.root_dir: Path = root_dir
+        self.conf_obj: Optional[ToxConfig] = None
 
     async def conf(self, *args: str) -> ToxConfig:
-        return await load_config(args)
+        self.conf_obj = await load_config(args)
+        return self.conf_obj
 
     async def run(self, *args: str) -> int:
         return await run(args)
 
+    def clean(self):
+        if self.conf_obj is not None:
+            shutil.rmtree(str(self.conf_obj.work_dir))
+
 
 @pytest.fixture(name='project')
 def project_fixture(tmpdir: Path, monkeypatch):
+    _project = None
+
     def project_factory(files: Dict[Path, str]):
         for file, content in files.items():
             file_path: Path = Path(tmpdir / file)
@@ -30,9 +39,15 @@ def project_fixture(tmpdir: Path, monkeypatch):
             with open(file_path, 'wt') as file_handler:
                 file_handler.write(content)
         monkeypatch.chdir(tmpdir)
-        return Project(tmpdir)
+        nonlocal _project
+        _project = Project(tmpdir)
+        return _project
 
-    return project_factory
+    try:
+        yield project_factory
+    finally:
+        if _project is not None:
+            _project.clean()
 
 
 @pytest.fixture(name='conf')
