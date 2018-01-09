@@ -3,7 +3,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Union, IO
 
 import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
@@ -13,13 +13,11 @@ async def parse(argv: Sequence[str]) -> argparse.Namespace:
     parser = build_parser()
     options: argparse.Namespace = parser.parse_args(argv)
 
-    # noinspection PyUnresolvedReferences
-    if isinstance(options.config, Path):
-        # noinspection PyUnresolvedReferences
-        options.root_dir = options.config.parents[0]
+    config: Union[Path, IO[str]] = getattr(options, 'config')
+    if isinstance(config, Path):
+        options.root_dir = config.parents[0]
     else:
-        # noinspection PyUnresolvedReferences
-        options.root_dir = Path(options.config.name).parents[0]
+        options.root_dir = Path(config.name).parents[0]
 
     logging.debug('CLI flags %r', options)
     return options

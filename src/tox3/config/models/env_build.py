@@ -42,7 +42,7 @@ class BuildEnvConfig(EnvConfig):
         return self._build_system.backend.replace(':', '.')
 
     @property
-    def build_backend(self) -> str:
+    def build_backend(self) -> Optional[str]:
         return self._build_system.backend
 
     @property

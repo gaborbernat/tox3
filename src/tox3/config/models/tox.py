@@ -18,9 +18,10 @@ class ToxConfig(CoreToxConfig):
         super().__init__(options, build_system, file, work_dir)
 
         def _raw_env(env_name: str) -> FileConf:
-            base = {k: v for k, v in self._file['env'].items() if not isinstance(v, dict)}
-            if env_name in self._file['env']:
-                base.update(self._file['env'][env_name])
+            env = self._file.get('env', {})
+            base = {k: v for k, v in env.items() if not isinstance(v, dict)}
+            if env_name in env:
+                base.update(env[env_name])
             return base
 
         self.build = BuildEnvConfig(options,
@@ -36,12 +37,12 @@ class ToxConfig(CoreToxConfig):
 
     @property
     def envs(self) -> List[str]:
-        return cast(List[str], self._file['envlist'])
+        return cast(List[str], self._file.get('envlist', []))
 
     @property
     def all_envs(self) -> List[str]:
         explicit: List[str] = self.envs
-        implicit: List[str] = [k for k, v in self._file['env'].items() if self._is_extra_env(k, v)]
+        implicit: List[str] = [k for k, v in self._file.get('env', {}).items() if self._is_extra_env(k, v)]
         return explicit + implicit
 
     def _is_extra_env(self, key: str, conf: Any) -> bool:
