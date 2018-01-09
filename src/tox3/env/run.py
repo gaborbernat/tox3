@@ -1,5 +1,7 @@
-from functools import partial
 import logging
+from functools import partial
+from pathlib import Path
+from typing import Optional
 
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
@@ -38,12 +40,13 @@ async def env_setup(build_config: BuildEnvConfig, config: RunEnvConfig, env: VEn
                                          config))
 
     extras = config.extras
-    if config.usedevelop:
-        project_package = config.root_dir
-    else:
-        project_package = build_config.built_package
-    package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
-    await env.install(install_params(f'project',
-                                     [package],
-                                     config,
-                                     config.usedevelop))
+    if build_config.skip is False:
+        if config.usedevelop:
+            project_package: Optional[Path] = config.root_dir
+        else:
+            project_package = build_config.built_package
+        package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
+        await env.install(install_params(f'project',
+                                         [package],
+                                         config,
+                                         config.usedevelop))

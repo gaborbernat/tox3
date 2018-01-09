@@ -30,7 +30,7 @@ class VEnv:
                      self.params.executable)
 
     async def install(self, params: Install) -> None:
-        if params.packages is not None:
+        if params.packages:
             cmd = '{} {} {}'.format(params.base_cmd,
                                     '-e' if params.use_develop else '',
                                     list_to_cmd(params.packages))

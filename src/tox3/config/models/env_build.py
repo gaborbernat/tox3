@@ -38,7 +38,9 @@ class BuildEnvConfig(EnvConfig):
         return self._build_system.requires
 
     @property
-    def build_backend_full(self) -> str:
+    def build_backend_full(self) -> Optional[str]:
+        if self._build_system.backend is None:
+            return None
         return self._build_system.backend.replace(':', '.')
 
     @property
@@ -46,8 +48,14 @@ class BuildEnvConfig(EnvConfig):
         return self._build_system.backend
 
     @property
-    def build_backend_base(self) -> str:
+    def build_backend_base(self) -> Optional[str]:
+        if self.build_backend is None:
+            return None
         at = self.build_backend.find(':')
         if at == -1:
             at = len(self.build_backend)
         return self.build_backend[:at]
+
+    @property
+    def skip(self) -> bool:
+        return self._file.get('skip', False)

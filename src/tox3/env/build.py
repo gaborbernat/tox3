@@ -1,10 +1,10 @@
 """build the project"""
-from contextlib import contextmanager
 import logging
 import os
-from pathlib import Path
 import shutil
-from typing import Generator, List, cast
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Generator, List, cast, Optional
 
 from tox3.config import BuildEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
@@ -36,12 +36,13 @@ async def create_install_package(config: BuildEnvConfig) -> None:
     out_dir = await _make_and_clean_out_dir(env)
 
     with change_dir(config.root_dir):
-        config.for_build_requires = await _get_requires_for_build(env, config.build_type,
-                                                                  config.build_backend_base,
-                                                                  config.build_backend_full)
-        await env.install(install_params(f'for build requires',
-                                         config.for_build_requires,
-                                         config))
+        if config.build_backend is not None:
+            config.for_build_requires = await _get_requires_for_build(env, config.build_type,
+                                                                      cast(str, config.build_backend_base),
+                                                                      cast(str, config.build_backend_full))
+            await env.install(install_params(f'for build requires',
+                                             config.for_build_requires,
+                                             config))
 
         await _clean(config, env.params.executable)
         result = await _build(env, out_dir, config.build_type,
@@ -53,17 +54,22 @@ async def create_install_package(config: BuildEnvConfig) -> None:
 async def _build(env: VEnv,
                  out_dir: Path,
                  build_type: str,
-                 build_backend_base: str,
-                 build_backend_full: str) -> Path:
-    printer = CmdLineBufferPrinter(limit=1)
-    script = f"""
+                 build_backend_base: Optional[str],
+                 build_backend_full: Optional[str]) -> Path:
+    if build_backend_full is not None:
+        printer = CmdLineBufferPrinter(limit=1)
+        script = f"""
 import sys
 import {build_backend_base}        
 basename = {build_backend_full}.build_{build_type}(sys.argv[1])
 print(basename)
 """
-    await run([env.params.executable, '-c', script, out_dir], stdout=printer)
-    result = out_dir / printer.last
+        await run([env.params.executable, '-c', script, out_dir], stdout=printer)
+        result = out_dir / printer.last
+    else:
+        build_cmd = 'sdist' if build_type == 'sdist' else 'bdist_wheel'
+        await run([env.params.executable, 'setup.py', build_cmd, '--dist-dir', out_dir, "--formats=zip"])
+        result = next(out_dir.iterdir())
     logging.info('built %s', result)
     return result
 
