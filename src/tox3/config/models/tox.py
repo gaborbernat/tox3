@@ -27,7 +27,9 @@ class ToxConfig(CoreToxConfig):
 
     @property
     def envs(self) -> List[str]:
-        return cast(List[str], self._file['envlist'])
+        explicit: List[str] = cast(List[str], self._file['envlist'])
+        implicit: List[str] = [k for k, v in self._file['env'].items() if isinstance(v, dict) and k not in explicit]
+        return explicit + implicit
 
     @property
     def run_environments(self) -> List[str]:

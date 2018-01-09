@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def pre_process_flags(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument('--logging', default='%(levelname)s %(message)s',
+    parser.add_argument('--logging', default='%(message)s',
                         help='tools logging format', dest='logging')
     levels = ', '.join('{} -> {}'.format(c, logging.getLevelName(l)) for c, l in sorted(VERBOSITY_TO_LOG_LEVEL.items()))
     group = parser.add_mutually_exclusive_group()
