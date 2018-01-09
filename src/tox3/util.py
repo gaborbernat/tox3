@@ -1,12 +1,15 @@
 import asyncio
+import json
+import logging
+import shlex
+import shutil
+import subprocess
+import sys
 from collections import deque
 from datetime import datetime
 from functools import partial
-import json
-import logging
 from pathlib import Path
-import shutil
-from typing import Any, Callable, Deque, Iterable, Mapping, Optional, Union
+from typing import Any, Callable, Deque, Iterable, Mapping, Optional, Union, List, cast
 
 Cmd = Union[Iterable[Union[str, Path]]]
 
@@ -58,7 +61,7 @@ async def _stream_subprocess(cmd: Cmd,
         runner = partial(asyncio.create_subprocess_exec, *cmd)
         shell_cmd = ' '.join(repr(i) for i in cmd)
 
-    logging.debug('run %s%s', shell_cmd, ' as shell command' if shell else '')
+    logging.debug('[run] %s%s', shell_cmd, ' as shell command' if shell else '')
     start = datetime.now()
     process = await runner(stdout=asyncio.subprocess.PIPE,
                            stderr=asyncio.subprocess.PIPE,
@@ -77,7 +80,7 @@ async def _stream_subprocess(cmd: Cmd,
         raise
     finally:
         end = datetime.now()
-        logging.debug('ran in %s with %s %s%s', end - start,
+        logging.debug('[ran] in %s with %s %s%s', end - start,
                       result_repr, shell_cmd, ' as shell command' if shell else '')
 
 
@@ -107,3 +110,12 @@ def rm_dir(folder: Path, msg: str) -> None:
     if folder.exists():
         logging.debug('%s => remove %r', msg, folder)
         shutil.rmtree(str(folder))
+
+
+def list_to_cmd(args: List[str]) -> str:
+    if sys.platform == 'win32':
+        converter = subprocess.list2cmdline  # type: ignore
+        package_list = cast(str, converter(args))
+    else:
+        package_list = ' '.join(shlex.quote(arg) for arg in args)
+    return package_list

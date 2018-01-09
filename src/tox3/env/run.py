@@ -21,7 +21,7 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> None:
                   exit_on_fail=False)
 
 
-async def env_setup(build_config: BuildEnvConfig, config: RunEnvConfig, env: VEnv):
+async def env_setup(build_config: BuildEnvConfig, config: RunEnvConfig, env: VEnv) -> None:
     if config.install_build_requires:
         await env.install(install_params(f'build requires ({build_config.build_type})',
                                          build_config.build_requires,

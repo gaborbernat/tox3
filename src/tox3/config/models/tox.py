@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import Dict, List, cast
+from typing import Dict, List, cast, Any
 
 from .core import CoreToxConfig
 from .env_build import BuildEnvConfig
@@ -39,12 +39,12 @@ class ToxConfig(CoreToxConfig):
         return cast(List[str], self._file['envlist'])
 
     @property
-    def all_envs(self):
+    def all_envs(self) -> List[str]:
         explicit: List[str] = self.envs
         implicit: List[str] = [k for k, v in self._file['env'].items() if self._is_extra_env(k, v)]
         return explicit + implicit
 
-    def _is_extra_env(self, key, conf):
+    def _is_extra_env(self, key: str, conf: Any) -> bool:
         return isinstance(conf, dict) and key not in self.envs and key != BuildEnvConfig.NAME
 
     @property

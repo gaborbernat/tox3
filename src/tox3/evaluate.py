@@ -56,6 +56,7 @@ def main(argv: Sequence[str]) -> int:
         return exc.code
     except Exception:
         logging.exception('failure')
+        return -1
     finally:
 
         loop.close()

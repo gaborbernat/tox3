@@ -1,15 +1,14 @@
 import logging
 import os
-from pathlib import Path
 import pickle
 import re
-import shlex
 import sys
+from pathlib import Path
 from typing import Mapping, Optional
 
 from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from tox3.interpreters import Python, find_python
-from tox3.util import CmdLineBufferPrinter, rm_dir, run
+from tox3.util import CmdLineBufferPrinter, rm_dir, run, list_to_cmd
 
 
 def strip_env_vars(bin_path: Path) -> Mapping[str, str]:
@@ -34,7 +33,7 @@ class VEnv:
         if params.packages is not None:
             cmd = '{} {} {}'.format(params.base_cmd,
                                     '-e' if params.use_develop else '',
-                                    ' '.join(shlex.quote(dep) for dep in params.packages))
+                                    list_to_cmd(params.packages))
             await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True)
 
 

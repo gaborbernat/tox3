@@ -1,6 +1,6 @@
-import shlex
 from typing import List, Optional, cast
 
+from tox3.util import list_to_cmd
 from .env import EnvConfig
 
 
@@ -37,4 +37,4 @@ class RunEnvConfig(EnvConfig):
     @property
     def posargs(self) -> str:
         args = getattr(self._options, 'args', [])
-        return ' '.join(shlex.quote(arg) for arg in args)
+        return list_to_cmd(args)
