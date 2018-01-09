@@ -3,15 +3,17 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools.build_meta'
 
 [tool.tox3]
-  envlist = ['py36']
+  envlist = ['py36', 'type']
 
 [tool.tox3.env]
   description = 'run the unit tests with pytest'
-  extras = ['testing']
   build_wheel = true
-
-[tool.tox3.env._build]
   basepython = 'python3.6'
 
 [tool.tox3.env.py36]
+  extras = ['testing']
   commands = ['pytest --cov="<envsitepackagesdir>/tox3" --cov-report=term-missing:skip-covered tests']
+
+[tool.tox3.env.type]
+   deps = ["mypy >= 0.560, <1"]
+   commands = ["python -m mypy src --strict"]

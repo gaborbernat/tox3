@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import List
+from typing import List, cast
 
 from ..project import FileConf, BuildSystem
 from ..util import Substitute
@@ -18,7 +18,7 @@ class CoreToxConfig(Substitute):
 
     @property
     def root_dir(self) -> Path:
-        return self._options.__getattribute__('root_dir')
+        return cast(Path, self._options.__getattribute__('root_dir'))
 
     @property
     def work_dir(self) -> Path:

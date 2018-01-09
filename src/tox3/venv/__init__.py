@@ -34,13 +34,13 @@ class VenvCore(NamedTuple):
 
 class Venv:
 
-    def __init__(self, base: Python, venv_core: VenvCore):
-        self.core = venv_core
-        self.base = base
+    def __init__(self, base: Python, venv_core: VenvCore) -> None:
+        self.core: VenvCore = venv_core
+        self.base: Python = base
         logging.info('virtual environment executable for %r ready at %r', self.base.python_name,
                      self.core.executable)
 
-    async def pip(self, deps: List[str], batch_name: str = ''):
+    async def pip(self, deps: List[str], batch_name: str = '') -> None:
         if deps is not None:
             logging.info('pip install %s %r', batch_name, deps)
             os_env = os.environ.copy()
@@ -70,11 +70,11 @@ async def setup(params: VenvParams) -> Venv:
     return result
 
 
-def _env_deps_changed(params: VenvParams, venv: 'Venv'):
+def _env_deps_changed(params: VenvParams, venv: Venv) -> bool:
     return params.python != venv.base.python_name
 
 
-def _load_cache(venv: VenvParams) -> Optional['Venv']:
+def _load_cache(venv: VenvParams) -> Optional[Venv]:
     if venv.cache.exists():
         logging.debug(f'load already existing virtualenv at {venv.cache}')
         with open(venv.cache, mode='rb') as file:
@@ -82,6 +82,7 @@ def _load_cache(venv: VenvParams) -> Optional['Venv']:
         if not _env_deps_changed(venv, result):
             return result
         rm_dir(venv.dir, 'env core dependencies changed')
+    return None
 
 
 async def _create_venv(base_python: Python, venv: VenvParams) -> VenvCore:

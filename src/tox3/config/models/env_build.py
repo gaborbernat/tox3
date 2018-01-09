@@ -14,7 +14,7 @@ class BuildEnvConfig(EnvConfig):
         return self._built_package
 
     @built_package.setter
-    def built_package(self, value: Path):
+    def built_package(self, value: Path) -> None:
         self._built_package = value
 
     @property
@@ -22,6 +22,6 @@ class BuildEnvConfig(EnvConfig):
         return self._for_build_requires
 
     @for_build_requires.setter
-    def for_build_requires(self, value: List[str]):
+    def for_build_requires(self, value: List[str]) -> None:
         self._for_build_requires = value
 

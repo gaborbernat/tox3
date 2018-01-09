@@ -3,19 +3,22 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Tuple, Iterable
+from typing import Tuple, Sequence
 
 import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
 
 
-async def parse(options: Iterable[str]) -> argparse.Namespace:
+async def parse(argv: Sequence[str]) -> argparse.Namespace:
     parser = build_parser()
-    options = parser.parse_args(options)
+    options: argparse.Namespace = parser.parse_args(argv)
 
+    # noinspection PyUnresolvedReferences
     if isinstance(options.config, Path):
+        # noinspection PyUnresolvedReferences
         options.root_dir = options.config.parents[0]
     else:
+        # noinspection PyUnresolvedReferences
         options.root_dir = Path(options.config.name).parents[0]
 
     logging.debug('CLI flags %r', options)
@@ -24,7 +27,7 @@ async def parse(options: Iterable[str]) -> argparse.Namespace:
 
 class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
-    def __init__(self, prog):
+    def __init__(self, prog: str) -> None:
         super().__init__(prog, max_help_position=35, width=200)
 
 
@@ -57,7 +60,7 @@ def pre_process_flags(parser: argparse.ArgumentParser) -> None:
                        help='do not print log messages')
 
 
-def get_logging(argv: Iterable[str]) -> Tuple[bool, bool, str]:
+def get_logging(argv: Sequence[str]) -> Tuple[bool, bool, str]:
     parser = argparse.ArgumentParser(add_help=False)
     pre_process_flags(parser)
     options, _ = parser.parse_known_args(argv)

@@ -2,9 +2,9 @@ import asyncio
 import datetime
 import logging
 import sys
-from typing import Iterable
+from typing import Sequence
 
-import colorlog
+import colorlog  # type: ignore
 
 from .build import create_install_package
 from .config import load as load_config, ToxConfig
@@ -14,12 +14,12 @@ from .env import run_env
 LOGGER = logging.getLogger()
 
 
-def _clean_handlers(log):
+def _clean_handlers(log: logging.Logger) -> None:
     for log_handler in list(log.handlers):  # remove handlers of libraries
         log.removeHandler(log_handler)
 
 
-def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str):
+def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str) -> None:
     """Setup logging."""
     _clean_handlers(LOGGER)
     if verbose is None:
@@ -38,7 +38,7 @@ def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str):
         logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
-def main(argv: Iterable[str]) -> None:
+def main(argv: Sequence[str]) -> int:
     _setup_logging(*get_logging(argv))
 
     if sys.platform == 'win32':
@@ -57,8 +57,9 @@ def main(argv: Iterable[str]) -> None:
         loop.close()
 
 
-async def run(argv: Iterable[str]):
+async def run(argv: Sequence[str]) -> int:
     start = datetime.datetime.now()
+    result: int = 1
     try:
         config: ToxConfig = await load_config(argv)
 
@@ -67,13 +68,6 @@ async def run(argv: Iterable[str]):
         for env_name in config.run_environments:
             await run_env(config.env(env_name), config.build)
         result = 0
-    except BaseException:
-        result = 1
-        raise
     finally:
         logging.info('finished %s', datetime.datetime.now() - start)
     return result
-
-
-def build_package():
-    pass

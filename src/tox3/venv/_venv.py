@@ -1,12 +1,12 @@
 import sys
-import venv
+import venv  # type: ignore
 
 
-class EnvB(venv.EnvBuilder):
+class EnvB(venv.EnvBuilder):  # type: ignore
     executable = None
     bin_path = None
 
-    def post_setup(self, context):
+    def post_setup(self, context):  # type: ignore
         self.bin_path = context.bin_path
         self.executable = context.env_exe
 

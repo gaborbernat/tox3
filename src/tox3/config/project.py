@@ -1,14 +1,17 @@
 """parse the project file"""
 import logging
-from collections import namedtuple
 from pathlib import Path
-from typing import IO, Union, Tuple, Dict, Any
+from typing import IO, Union, Tuple, Dict, Any, List
+from typing import NamedTuple
 
-import toml
+import toml  # type: ignore
 
 FileConf = Dict[str, Any]
 
-BuildSystem = namedtuple('BuildSystem', ['requires', 'backend'])
+
+class BuildSystem(NamedTuple):
+    requires: List[str]
+    backend: str
 
 
 async def from_toml(config_file: Union[Path, IO[str]]) -> Tuple[BuildSystem, FileConf]:

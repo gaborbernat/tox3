@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import Set, Any
 
 VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
                           1: logging.WARN,
@@ -12,7 +13,7 @@ class Substitute:
 
     def _substitute(self, arg: str) -> str:
         matches = Substitute.pattern.finditer(arg)
-        handled = set()
+        handled: Set[str] = set()
         for match in matches:
             try:
                 key = match.group(1)
@@ -27,7 +28,7 @@ class Substitute:
                 pass
         return arg
 
-    def __getattribute__(self, item):
+    def __getattribute__(self, item: str) -> Any:
         result = super().__getattribute__(item)
         if isinstance(result, str):
             return self._substitute(result)

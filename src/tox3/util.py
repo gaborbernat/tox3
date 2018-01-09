@@ -6,18 +6,51 @@ from collections import deque
 from datetime import datetime
 from functools import partial
 from pathlib import Path
+from typing import Mapping, Callable, Any, Optional, Deque, Union, Iterable
+
+Cmd = Union[Iterable[Union[str, Path]]]
 
 
-async def _read_stream(stream, callback):
-    while True:
-        line = await stream.readline()
-        if line:
-            callback(line=line.decode())
-        else:
-            break
+class CmdLineBufferPrinter:
+
+    def __init__(self, limit: Optional[int] = None, live_print: bool = True) -> None:
+        self.live_print: bool = live_print
+        self.elements: Deque[str] = deque(maxlen=limit) if limit is not None else deque()
+
+    def __call__(self, line: str) -> None:
+        self.elements.append(line.rstrip())
+        if self.live_print:
+            print_to_sdtout(line)
+
+    @property
+    def json(self) -> Any:
+        return json.loads(self.last)
+
+    @property
+    def last(self) -> str:
+        last = self.elements.pop()
+        self.elements.append(last)
+        return last
 
 
-async def _stream_subprocess(cmd, stdout_cb, stderr_cb, env, shell=False):
+StreamCallback = Union[Callable[[str], Any], CmdLineBufferPrinter]
+
+
+async def _read_stream(stream: Optional[asyncio.streams.StreamReader], callback: StreamCallback) -> None:
+    if stream is not None:
+        while True:
+            line = await stream.readline()
+            if line:
+                callback(line.decode())
+            else:
+                break
+
+
+async def _stream_subprocess(cmd: Cmd,
+                             stdout_cb: StreamCallback,
+                             stderr_cb: StreamCallback,
+                             env: Optional[Mapping[str, str]],
+                             shell: bool = False) -> int:
     if shell:
         runner = partial(asyncio.create_subprocess_shell, cmd)
         shell_cmd = cmd
@@ -34,56 +67,40 @@ async def _stream_subprocess(cmd, stdout_cb, stderr_cb, env, shell=False):
         _read_stream(process.stdout, stdout_cb),
         _read_stream(process.stderr, stderr_cb)
     ])
-    result = None
+    result_repr: Optional[str] = None
     try:
         result = await process.wait()
+        result_repr = repr(result)
         return result
     except BaseException as e:
-        result = e
+        result_repr = repr(e)
         raise
     finally:
         end = datetime.now()
-        logging.debug('ran in %s with %r %s%s', end - start,
-                      result, shell_cmd, ' as shell command' if shell else '')
+        logging.debug('ran in %s with %s %s%s', end - start,
+                      result_repr, shell_cmd, ' as shell command' if shell else '')
 
 
-def print_to_sdtout(line, level=logging.DEBUG):
+def print_to_sdtout(line: str, level: int = logging.DEBUG) -> None:
     logging.log(level, line.rstrip())
 
 
-def print_to_sdterr(line, level=logging.DEBUG):
+def print_to_sdterr(line: str, level: int = logging.DEBUG) -> None:
     logging.log(level, line.rstrip())
 
 
-async def run(cmd, stdout=print_to_sdtout, stderr=print_to_sdterr, env=None, shell=False, exit_on_fail=True):
+async def run(cmd: Cmd,
+              stdout: StreamCallback = print_to_sdtout,
+              stderr: StreamCallback = print_to_sdterr,
+              env: Optional[Mapping[str, str]] = None,
+              shell: bool = False,
+              exit_on_fail: bool = True) -> int:
     if shell is False:
         cmd = [i if isinstance(i, str) else str(i) for i in cmd]
     result_code = await _stream_subprocess(cmd, stdout, stderr, env=env, shell=shell)
     if exit_on_fail and result_code != 0:
         raise SystemExit(-1)
     return result_code
-
-
-class CmdLineBufferPrinter:
-
-    def __init__(self, limit=None, live_print=True):
-        self.live_print = live_print
-        self.elements = deque(maxlen=limit)
-
-    def __call__(self, line):
-        self.elements.append(line.rstrip())
-        if self.live_print:
-            print_to_sdtout(line)
-
-    @property
-    def json(self):
-        return json.loads(self.last)
-
-    @property
-    def last(self):
-        last = self.elements.pop()
-        self.elements.append(last)
-        return last
 
 
 def rm_dir(folder: Path, msg: str) -> None:

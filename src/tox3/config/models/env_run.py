@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, cast
 
 from .env import EnvConfig
 
@@ -7,7 +7,7 @@ class RunEnvConfig(EnvConfig):
 
     @property
     def commands(self) -> List[str]:
-        return self._file['commands']
+        return cast(List[str], self._file['commands'])
 
     @property
     def extras(self) -> List[str]:
@@ -16,3 +16,7 @@ class RunEnvConfig(EnvConfig):
     @property
     def description(self) -> Optional[str]:
         return self._file.get('description')
+
+    @property
+    def deps(self) -> List[str]:
+        return self._file.get('deps', [])

@@ -1,26 +1,16 @@
-.vagrant
 *.pyc
 *.pyo
 *.swp
-*.html
-*.class
-*.orig
-*.rej
-*~
 __pycache__
 
 build
 dist
-doc/_build/
 *.egg-info
 .tox3
 .cache
 
-coverage.xml
-htmlcov
-
 .idea
 .eggs/
-py27/
 
 .coverage
+.mypy_cache
