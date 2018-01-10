@@ -5,7 +5,6 @@ build-backend = 'setuptools.build_meta'
 [tool.tox3]
 envlist = ['py36', 'type']
 
-
 [tool.tox3.env]
 description = 'run the unit tests with pytest'
 basepython = 'python3.6'

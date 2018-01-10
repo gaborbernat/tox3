@@ -26,8 +26,9 @@ def _project_sys_dir(root_dir: Path) -> Path:
             with open(project_id_file, 'rt') as file_handler:
                 folder = json.load(file_handler)
                 if folder != str(root_dir):
-                    logging.debug('%d work dir %s already reserved for %s', at, project_id_folder, folder)
-                    reserved = True
+                    logging.debug('%d work dir %s already reserved for %s',  # pragma: no cover
+                                  at, project_id_folder, folder)  # pragma: no cover
+                    reserved = True  # pragma: no cover
         if not reserved:
             if not project_id_folder.exists():
                 os.makedirs(str(project_id_folder))
@@ -40,7 +41,11 @@ def _project_sys_dir(root_dir: Path) -> Path:
 
 
 def root_dir(options: argparse.Namespace, work_dir: Optional[Path]) -> Path:
-    if work_dir is not None and work_dir.exists():
+    if work_dir is not None:
+        if not work_dir.is_absolute():
+            work_dir = work_dir.absolute()
+        if not work_dir.exists():
+            os.makedirs(str(work_dir))
         return work_dir
     return _project_sys_dir(cast(Path, options.__getattribute__('root_dir')))
 
