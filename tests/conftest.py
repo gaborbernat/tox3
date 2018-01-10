@@ -4,7 +4,7 @@ import shutil
 from typing import Callable, Dict, Optional
 
 import pytest
-
+import textwrap
 from tox3.evaluate import ToxConfig, load_config, run
 
 
@@ -37,7 +37,7 @@ def project_fixture(tmpdir: Path, monkeypatch):
             if not dir.exists():
                 os.makedirs(str(dir))
             with open(file_path, 'wt') as file_handler:
-                file_handler.write(content)
+                file_handler.write(textwrap.dedent(content))
         monkeypatch.chdir(tmpdir)
         nonlocal _project
         _project = Project(tmpdir)
