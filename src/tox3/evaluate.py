@@ -37,18 +37,21 @@ def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str) -> None:
         logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
+def get_event_loop():
+    if sys.platform == 'win32':
+        return asyncio.ProactorEventLoop()  # on windows IO needs this
+    return asyncio.new_event_loop()  # default on UNIX is fine
+
+
 def main(argv: Sequence[str]) -> int:
     _setup_logging(*get_logging(argv))
 
-    if sys.platform == 'win32':
-        loop = asyncio.ProactorEventLoop()
-        asyncio.set_event_loop(loop)
-    else:
-        loop = asyncio.get_event_loop()
-    logging.debug('got event loop %r', loop)
+    loop = get_event_loop()
+    logging.debug('event loop %r', loop)
 
     # noinspection PyBroadException
     try:
+        asyncio.set_event_loop(loop)
         result = loop.run_until_complete(run(argv))
         logging.debug('done with %s', result)
         return result
@@ -58,7 +61,6 @@ def main(argv: Sequence[str]) -> int:
         logging.exception('failure')
         return -1
     finally:
-
         loop.close()
 
 

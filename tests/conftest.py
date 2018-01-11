@@ -1,14 +1,32 @@
 import asyncio
 import os
+from pathlib import Path
 import shutil
 import sys
 import textwrap
-from pathlib import Path
 from typing import Callable, Dict, Optional, Union
 
 import pytest
 
-from tox3.evaluate import ToxConfig, load_config, run
+from tox3.evaluate import ToxConfig, get_event_loop, load_config, run
+
+
+@pytest.yield_fixture()
+def event_loop():
+    """pytest-asyncio customization"""
+    if sys.platform != "win32":
+        asyncio.set_event_loop(None)  # see https://github.com/pytest-dev/pytest-asyncio/issues/73
+    loop = get_event_loop()
+    if sys.platform != "win32":
+        # on UNIX we also need to attach the loop to the child watcher for asyncio.subprocess
+        policy = asyncio.get_event_loop_policy()
+        watcher = asyncio.SafeChildWatcher()
+        watcher.attach_loop(loop)
+        policy.set_child_watcher(watcher)
+    try:
+        yield loop
+    finally:
+        loop.close()
 
 
 class Project:
@@ -36,16 +54,6 @@ class Project:
     def clean(self):
         if self.conf_obj is not None:
             shutil.rmtree(str(self.conf_obj.work_dir))
-
-
-@pytest.yield_fixture()
-def event_loop():
-    if sys.platform == 'win32':
-        loop = asyncio.ProactorEventLoop()  # on windows IO needs this
-    else:
-        loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture(name='project')
