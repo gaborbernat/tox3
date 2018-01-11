@@ -59,7 +59,7 @@ async def _stream_subprocess(cmd: Cmd,
         shell_cmd = cmd
     else:
         runner = partial(asyncio.create_subprocess_exec, *cmd)
-        shell_cmd = ' '.join(repr(i) for i in cmd)
+        shell_cmd = list_to_cmd(cmd)
 
     logging.debug('[run] %s%s', shell_cmd, ' as shell command' if shell else '')
     start = datetime.now()

@@ -1,9 +1,8 @@
 import argparse
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Optional, cast
 
-from tox3.interpreters import Python
 from tox3.venv import VEnv
 from .core import CoreToxConfig
 from ..project import BuildSystem, FileConf

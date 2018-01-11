@@ -4,6 +4,25 @@ from tox3.config import ToxConfig
 
 
 @pytest.mark.asyncio
+async def test_recreate(conf):
+    env = conf(f'''
+        [tool.tox3.env.extra]
+        ''')
+
+    conf: ToxConfig = await env.conf()
+    assert conf.build.recreate is False
+    assert conf.env('extra').recreate is False
+
+    conf: ToxConfig = await env.conf('-r')
+    assert conf.build.recreate is True
+    assert conf.env('extra').recreate is True
+
+    conf: ToxConfig = await env.conf('--recreate')
+    assert conf.build.recreate is True
+    assert conf.env('extra').recreate is True
+
+
+@pytest.mark.asyncio
 async def test_base_python_custom(conf):
     env = conf(f'''
     [tool.tox3.env]

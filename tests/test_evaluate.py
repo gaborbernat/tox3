@@ -1,9 +1,7 @@
 from io import StringIO
 
-import pytest
-
-from tox3.evaluate import main
 from tox3.config.cli import build_parser
+from tox3.evaluate import main
 
 
 def test_help(capsys):
