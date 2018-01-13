@@ -8,7 +8,7 @@ from typing import Mapping, Optional
 
 from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from tox3.interpreters import Python, find_python
-from tox3.util import CmdLineBufferPrinter, rm_dir, run, list_to_cmd
+from tox3.util import CmdLineBufferPrinter, list_to_cmd, rm_dir, run
 
 
 def strip_env_vars(bin_path: Path) -> Mapping[str, str]:

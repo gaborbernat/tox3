@@ -4,7 +4,7 @@ import os
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, cast, Optional
+from typing import Generator, List, Optional, cast
 
 from tox3.config import BuildEnvConfig
 from tox3.config.models.venv import VEnvCreateParam

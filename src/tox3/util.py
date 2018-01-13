@@ -9,7 +9,7 @@ from collections import deque
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Deque, Iterable, Mapping, Optional, Union, List, cast
+from typing import Any, Callable, Deque, Iterable, List, Mapping, Optional, Union, cast
 
 Cmd = Union[Iterable[Union[str, Path]]]
 

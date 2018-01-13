@@ -3,9 +3,10 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Tuple, Union, IO
+from typing import IO, Sequence, Tuple, Union
 
 import tox3
+
 from .util import VERBOSITY_TO_LOG_LEVEL
 
 

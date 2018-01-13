@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Set, Any
+from typing import Any, Set
 
 VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
                           1: logging.WARN,

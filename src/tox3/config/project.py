@@ -1,8 +1,7 @@
 """parse the project file"""
 import logging
 from pathlib import Path
-from typing import IO, Union, Tuple, Dict, Any, List, Optional
-from typing import NamedTuple
+from typing import Any, Dict, IO, List, NamedTuple, Optional, Tuple, Union
 
 import toml  # type: ignore
 

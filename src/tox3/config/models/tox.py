@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import Dict, List, cast, Any
+from typing import Any, Dict, List, cast
 
 from .core import CoreToxConfig
 from .env_build import BuildEnvConfig
