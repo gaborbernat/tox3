@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List, Optional, cast
 
 from tox3.venv import VEnv
-
 from .core import CoreToxConfig
 from ..project import BuildSystem, FileConf
 
@@ -27,12 +26,16 @@ class EnvConfig(CoreToxConfig):
         key = 'basepython'
         if key in self._file:
             return cast(str, self._file[key])
-        match = re.match(r'py(\d?)(\d*)', self.name)
+        return self.resolve_python_key(self.name)
+
+    @staticmethod
+    def resolve_python_key(key: str) -> str:
+        match = re.match(r'py(\d?)(\d*)', key)
         if match:
             major = match.group(1)
             minor = match.group(2)
             return 'python{}{}'.format(major, '' if not minor else f'.{minor}')
-        raise ValueError('no base python for {}'.format(self.name))
+        raise ValueError('no base python for {}'.format(key))
 
     @property
     def recreate(self) -> bool:

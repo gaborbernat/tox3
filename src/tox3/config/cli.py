@@ -11,6 +11,7 @@ import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
 
 CONFIG_FILE_NAME = 'pyproject.toml'
+TOX_ENV = 'TOX_ENV'
 
 
 def find_config(config: Union[None, Path, IO[str]]) -> Union[Path, IO[str]]:
@@ -55,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
-                        help='run only this run environments', nargs="+", type=str, env_var='TOXENV')
+                        help='run only this run environments', nargs="+", type=str, env_var=TOX_ENV)
     parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
                         help="show list of all defined environments (with description if verbose)")
     parser.add_argument('args', nargs='*', help='additional arguments available to command positional substitution')
