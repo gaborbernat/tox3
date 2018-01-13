@@ -2,29 +2,16 @@
 import logging
 import os
 import shutil
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Optional, cast
+from typing import List, Optional, cast
 
 from tox3.config import BuildEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
-from tox3.env.util import EnvLogging, install_params
+from tox3.env.util import EnvLogging, change_dir, install_params
 from tox3.util import CmdLineBufferPrinter, rm_dir, run
 from tox3.venv import VEnv, setup as setup_venv
 
 LOGGER = EnvLogging(logging.getLogger(__name__), {'env': '_build'})
-
-
-@contextmanager
-def change_dir(to_dir: Path) -> Generator[None, None, None]:
-    cwd = os.getcwd()
-    LOGGER.debug('change cwd to %r', to_dir)
-    os.chdir(str(to_dir))
-    try:
-        yield
-    finally:
-        LOGGER.debug('change cwd to %r', to_dir)
-        os.chdir(cwd)
 
 
 async def create_install_package(config: BuildEnvConfig) -> None:
@@ -37,7 +24,7 @@ async def create_install_package(config: BuildEnvConfig) -> None:
 
     out_dir = await _make_and_clean_out_dir(env)
 
-    with change_dir(config.root_dir):
+    with change_dir(config.root_dir, LOGGER):
         if config.build_backend is not None:
             config.for_build_requires = await _get_requires_for_build(env, config.build_type,
                                                                       cast(str, config.build_backend_base),

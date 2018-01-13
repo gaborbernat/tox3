@@ -1,11 +1,12 @@
 import logging
 from functools import partial
+from os import getcwd
 from pathlib import Path
 from typing import Optional
 
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
-from tox3.env.util import EnvLogging, install_params
+from tox3.env.util import EnvLogging, change_dir, install_params
 from tox3.util import list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
@@ -19,11 +20,12 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> None:
     await env_setup(build_config, config, env)
 
     env_vars = strip_env_vars(env.params.bin_path)
-    for command in config.commands:
-        logger.info('cmd: %s', list_to_cmd(command))
-        await run(command, logger=logger,
-                  stdout=partial(print_to_sdtout, level=logging.INFO), env=env_vars, shell=True,
-                  exit_on_fail=False)
+    with change_dir(config.changedir, logger):
+        for command in config.commands:
+            logger.info('cmd: %s in %s', list_to_cmd(command), getcwd())
+            await run(command, logger=logger,
+                      stdout=partial(print_to_sdtout, level=logging.INFO), env=env_vars, shell=True,
+                      exit_on_fail=False)
 
 
 async def env_setup(build_config: BuildEnvConfig,
@@ -51,7 +53,7 @@ async def env_setup(build_config: BuildEnvConfig,
         else:
             project_package = build_config.built_package
         package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
-        await env.install(install_params(f'project',
-                                         [package],
-                                         config,
-                                         config.usedevelop))
+    await env.install(install_params(f'project',
+                                     [package],
+                                     config,
+                                     config.usedevelop))

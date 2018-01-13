@@ -16,10 +16,12 @@ basepython = 'python3.6'
 build_wheel = true
 
 [tool.tox3.env.type]
+basepython = 'python3.6'
 deps = ["mypy >= 0.560, <1"]
 commands = ["python -m mypy src --strict"]
 
 [tool.tox3.env.dev]
+basepython = 'python3.6'
 extras = ['testing']
 usedevelop = true
 install_build_requires = true

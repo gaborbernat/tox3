@@ -1,8 +1,12 @@
 import logging
-from typing import Any, Dict, List, Tuple
+import os
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Dict, Generator, List, Tuple
 
 from tox3.config.models.env import EnvConfig
 from tox3.config.models.venv import Install
+from tox3.util import Loggers
 
 
 def install_params(batch_name: str, packages: List[str], config: EnvConfig,
@@ -23,3 +27,15 @@ class EnvLogging(logging.LoggerAdapter):
         else:
             env_info = f'[{env}]'
         return f"{env_info}{msg}", kwargs
+
+
+@contextmanager
+def change_dir(to_dir: Path, logger: Loggers) -> Generator[None, None, None]:
+    cwd = os.getcwd()
+    logger.debug('change cwd to %r', to_dir)
+    os.chdir(str(to_dir))
+    try:
+        yield
+    finally:
+        logger.debug('change cwd to %r', to_dir)
+        os.chdir(cwd)

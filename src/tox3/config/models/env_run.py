@@ -1,8 +1,8 @@
 import shlex
+from pathlib import Path
 from typing import List, Optional
 
 from tox3.util import list_to_cmd
-
 from .env import EnvConfig
 
 
@@ -47,3 +47,10 @@ class RunEnvConfig(EnvConfig):
     def posargs(self) -> str:
         args = getattr(self._options, 'args', [])
         return list_to_cmd(args)
+
+    @property
+    def changedir(self) -> Path:
+        change_dir = self._file.get('changedir')
+        if change_dir is None:
+            return self.root_dir
+        return Path(change_dir)
