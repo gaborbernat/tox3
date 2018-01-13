@@ -27,9 +27,11 @@ class EnvConfig(CoreToxConfig):
         key = 'basepython'
         if key in self._file:
             return cast(str, self._file[key])
-        match = re.match(r'py(\d)(\d+)', self.name)
+        match = re.match(r'py(\d?)(\d*)', self.name)
         if match:
-            return 'python{}.{}'.format(match.group(1), match.group(2))
+            major = match.group(1)
+            minor = match.group(2)
+            return 'python{}{}'.format(major, '' if not minor else f'.{minor}')
         raise ValueError('no base python for {}'.format(self.name))
 
     @property

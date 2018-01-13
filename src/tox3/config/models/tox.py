@@ -41,9 +41,18 @@ class ToxConfig(CoreToxConfig):
 
     @property
     def all_envs(self) -> List[str]:
+        # environments enlisted to be called by default
         explicit: List[str] = self.envs
+        # environments that have config values, even though not called by default
         implicit: List[str] = [k for k, v in self._file.get('env', {}).items() if self._is_extra_env(k, v)]
-        return explicit + implicit
+
+        defined = explicit + implicit
+        # environments that are invoked on demand
+        run_defined: List[str] = []
+        for env in self.run_environments:
+            if env not in defined:
+                run_defined.append(env)
+        return defined + run_defined
 
     def _is_extra_env(self, key: str, conf: Any) -> bool:
         return isinstance(conf, dict) and key not in self.envs and key != BuildEnvConfig.NAME

@@ -4,7 +4,8 @@ from tox3.config import ToxConfig
 
 
 @pytest.mark.asyncio
-async def test_pytest(conf):
+async def test_pytest(conf, monkeypatch):
+    monkeypatch.delenv('TOXENV', raising=False)
     env = conf('''
 [build-system]
 requires = ['setuptools >= 38.2.4']

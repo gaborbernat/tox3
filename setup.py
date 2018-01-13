@@ -16,6 +16,7 @@ setup(
     setup_requires=['setuptools_scm >= 1.15.6, <2'],
     install_requires=['toml >= 0.9.3, <1',
                       'colorlog >= 3.1.0, <4',
+                      'ConfigArgParse >= 0.12.0, < 1',
                       'py',
                       'virtualenv'],
     extras_require={'testing': ['pytest >= 3.0.0',

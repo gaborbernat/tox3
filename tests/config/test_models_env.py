@@ -37,7 +37,10 @@ async def test_base_python_custom(conf):
 @pytest.mark.parametrize('env_name, python', [
     ('py27', 'python2.7'),
     ('py36', 'python3.6'),
-    ('py310', 'python3.10')
+    ('py310', 'python3.10'),
+    ('py2', 'python2'),
+    ('py3', 'python3'),
+    ('py', 'python'),
 ])
 @pytest.mark.asyncio
 async def test_base_python_implicit(conf, env_name, python):

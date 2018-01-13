@@ -3,7 +3,9 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Tuple, IO, Union
+from typing import IO, Sequence, Tuple, Union
+
+import configargparse
 
 import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
@@ -43,17 +45,17 @@ class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser("tox3", formatter_class=Tox3HelpFormatter,
-                                     epilog=f'{tox3.__version__} from {tox3.__file__}')
+    parser = configargparse.ArgParser("tox3", formatter_class=Tox3HelpFormatter,
+                                      epilog=f'{tox3.__version__} from {tox3.__file__}')
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
     parser.add_argument('-c', '--config', type=argparse.FileType('r'), dest='config',
-                        default=None, metavar='file')
+                        default=None, metavar='file', env_var='TOX_CONFIG')
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
-                        help='run only this run environments', nargs="+", type=str)
+                        help='run only this run environments', nargs="+", type=str, env_var='TOXENV')
     parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
                         help="show list of all defined environments (with description if verbose)")
     parser.add_argument('args', nargs='*', help='additional arguments available to command positional substitution')
