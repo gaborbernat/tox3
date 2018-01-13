@@ -5,6 +5,8 @@ import pytest
 from tox3.config import ToxConfig
 
 
+@pytest.mark.network
+@pytest.mark.venv
 @pytest.mark.asyncio_process_pool
 async def test_setuptools_build(project):
     proj = project({

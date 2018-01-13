@@ -10,7 +10,12 @@ class RunEnvConfig(EnvConfig):
     @property
     def commands(self) -> List[str]:
         commands: List[str] = self._file.get('commands', [])
-        return [list_to_cmd(shlex.split(command)) for command in commands]
+        result = []
+        for command in commands:
+            command = self._substitute(command).strip()
+            cmd = list_to_cmd(shlex.split(command))
+            result.append(cmd)
+        return result
 
     @property
     def extras(self) -> List[str]:

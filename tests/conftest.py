@@ -11,6 +11,12 @@ import pytest
 from tox3.evaluate import ToxConfig, get_event_loop, load_config, run
 
 
+def pytest_configure(config):
+    # register an additional marker
+    config.addinivalue_line("markers", "network: tests that require network access")
+    config.addinivalue_line("markers", "venv: tests that require virtual environment creation")
+
+
 @pytest.yield_fixture()
 def event_loop():
     """pytest-asyncio customization"""

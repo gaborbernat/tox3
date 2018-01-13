@@ -18,7 +18,9 @@ def _project_sys_dir(root_dir: Path) -> Path:
     at = 0
     temp_dir = Path(_tox_sys_dir())
     while True:
-        project_id = hashlib.sha256(f'{root_dir}{at}'.encode('UTF-8')).hexdigest()[:32]
+        hash = hashlib.sha256(f'{root_dir}{at}'.encode('UTF-8')).hexdigest()
+        folder_name = root_dir.name[:12]
+        project_id = '{}_{}'.format(folder_name, hash[:32 - len(folder_name) - 1])
         project_id_folder = temp_dir / project_id
         project_id_file = project_id_folder / '.id'
         reserved = False
