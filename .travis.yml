@@ -18,13 +18,9 @@ matrix:
     - python: 3.6
       env: TOXENV=type
     
-before_install:
- - pyenv versions
- 
 install:
-  - pip install -U six
-  - pip install --pre -U tox
+  - pip install .
 
 script:
-  - pip install .
+  - pip list --format=columns
   - python -m tox3 -vvvv

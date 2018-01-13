@@ -112,6 +112,8 @@ async def _create_venv_python_2(base_python: Python, venv_dir: Path, logger: Log
 
 async def site_package(executable: Path, logger: Loggers) -> Path:
     printer = CmdLineBufferPrinter(limit=1)
-    await run(cmd=[executable, '-c', 'import site; import json; print(json.dumps(site.getsitepackages()))'],
+
+    await run(cmd=[executable, '-c', 'from distutils.sysconfig import get_python_lib;'
+                                     'print(get_python_lib())'],
               stdout=printer, logger=logger)
-    return Path(printer.json[-1])
+    return Path(printer.last)

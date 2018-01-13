@@ -21,7 +21,7 @@ class Python(NamedTuple):
 
 async def find_python(python: str, logger: Loggers) -> Python:
     base_python_exe = get_interpreter(python)
-    logger.info('use python %s', base_python_exe)
+    logger.info('use python %s (as %s)', base_python_exe, python)
     version, version_info = await get_python_info(base_python_exe, logger)
     return Python(python, base_python_exe, version, version_info)
 
