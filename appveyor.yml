@@ -9,11 +9,12 @@ matrix:
   fast_finish: true
 
 install:
-  - "%PYTHON%\\python.exe  -m pip install -U ."
+  - set PATH=%PYTHON%;%PATH%
+  - python.exe  -m pip install -U .
 
 test_script:
-  - "%PYTHON%\\python.exe -m pip list --format=columns"
-  - "%PYTHON%\\python.exe  -m tox3 -vvvv"
+  - python.exe -m pip list --format=columns
+  - python.exe -m tox3 -vvvv"
 
 cache:
   - '%LOCALAPPDATA%\pip\cache'
