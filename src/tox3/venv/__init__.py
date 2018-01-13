@@ -77,7 +77,7 @@ def _load_cache(venv: VEnvCreateParam) -> Optional[VEnv]:
 
 
 async def _create_venv(base_python: Python, venv: VEnvCreateParam) -> VEnvParams:
-    venv.logger.info('create venv %s at %r with %s', venv.name, venv.dir, base_python.version)
+    venv.logger.info('create venv %s at %r with %r', venv.name, venv.dir, base_python.version)
     if base_python.major_version < 3:
         venv_core = await _create_venv_python_2(base_python, venv.dir, venv.logger)
     else:

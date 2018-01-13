@@ -27,11 +27,11 @@ async def find_python(python: str, logger: Loggers) -> Python:
 
 
 async def get_python_info(base_python_exe: Path, logger: Loggers) -> Tuple[str, VersionInfo]:
-    printer = CmdLineBufferPrinter(limit=2)
+    printer = CmdLineBufferPrinter(limit=None)
     await run([base_python_exe, "-c", "import sys; print(sys.version); print(tuple(sys.version_info))"],
               stdout=printer, logger=logger)
     version_info = eval(printer.elements.pop(), {}, {})
-    version = printer.elements.pop()
+    version = '\n'.join(printer.elements)
     return version, version_info
 
 
