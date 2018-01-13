@@ -75,7 +75,9 @@ async def run(argv: Sequence[str]) -> int:
             await create_install_package(config.build)
 
         for env_name in config.run_environments:
+            logging.info('')
             await run_env(config.env(env_name), config.build)
+
         result = 0
     finally:
         logging.info('finished %s', datetime.datetime.now() - start)

@@ -1,12 +1,15 @@
 from pathlib import Path
 from typing import List, NamedTuple
 
+from tox3.util import Loggers
+
 
 class VEnvCreateParam(NamedTuple):
     recreate: bool
     dest_dir: Path
     name: str
     python: str
+    logger: Loggers
 
     @property
     def dir(self) -> Path:

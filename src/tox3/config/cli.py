@@ -3,22 +3,34 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import IO, Sequence, Tuple, Union
+from typing import Sequence, Tuple, IO, Union
 
 import tox3
-
 from .util import VERBOSITY_TO_LOG_LEVEL
+
+CONFIG_FILE_NAME = 'pyproject.toml'
+
+
+def find_config(config: Union[None, Path, IO[str]]) -> Union[Path, IO[str]]:
+    if config is not None:
+        return config
+    cur_dir = Path(os.getcwd()) / 'dummy'
+    for parent in cur_dir.parents:
+        candidate = parent / CONFIG_FILE_NAME
+        if candidate.exists():
+            return candidate
+    raise ValueError('could not locate configuration file')
 
 
 async def parse(argv: Sequence[str]) -> argparse.Namespace:
     parser = build_parser()
     options: argparse.Namespace = parser.parse_args(argv)
 
-    config: Union[Path, IO[str]] = getattr(options, 'config')
-    if isinstance(config, Path):
-        options.root_dir = config.parents[0]
+    options.config = find_config(getattr(options, 'config'))
+    if isinstance(options.config, Path):
+        options.root_dir = options.config.parents[0]
     else:
-        options.root_dir = Path(config.name).parents[0]
+        options.root_dir = Path(options.config.name).parents[0]
 
     logging.debug('CLI flags %r', options)
     return options
@@ -37,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
     parser.add_argument('-c', '--config', type=argparse.FileType('r'), dest='config',
-                        default=(Path(os.getcwd()) / 'pyproject.toml'), metavar='file')
+                        default=None, metavar='file')
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',

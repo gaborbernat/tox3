@@ -1,10 +1,9 @@
-import logging
 from pathlib import Path
 from typing import NamedTuple, Tuple
 
 import py  # type: ignore
 
-from .util import CmdLineBufferPrinter, run
+from .util import CmdLineBufferPrinter, Loggers, run
 
 VersionInfo = Tuple[int, int, int, str]
 
@@ -20,17 +19,17 @@ class Python(NamedTuple):
         return self.version_info[0]
 
 
-async def find_python(python: str) -> Python:
+async def find_python(python: str, logger: Loggers) -> Python:
     base_python_exe = get_interpreter(python)
-    logging.info('use python %s', base_python_exe)
-    version, version_info = await get_python_info(base_python_exe)
+    logger.info('use python %s', base_python_exe)
+    version, version_info = await get_python_info(base_python_exe, logger)
     return Python(python, base_python_exe, version, version_info)
 
 
-async def get_python_info(base_python_exe: Path) -> Tuple[str, VersionInfo]:
+async def get_python_info(base_python_exe: Path, logger: Loggers) -> Tuple[str, VersionInfo]:
     printer = CmdLineBufferPrinter(limit=2)
     await run([base_python_exe, "-c", "import sys; print(sys.version); print(tuple(sys.version_info))"],
-              stdout=printer)
+              stdout=printer, logger=logger)
     version_info = eval(printer.elements.pop(), {}, {})
     version = printer.elements.pop()
     return version, version_info

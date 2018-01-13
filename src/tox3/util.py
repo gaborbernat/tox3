@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Callable, Deque, Iterable, List, Mapping, Optional, Union, cast
 
 Cmd = Iterable[Union[str, Path]]
+Loggers = Union[logging.LoggerAdapter, logging.Logger]
 
 
 class CmdLineBufferPrinter:
@@ -20,10 +21,10 @@ class CmdLineBufferPrinter:
         self.live_print: bool = live_print
         self.elements: Deque[str] = deque(maxlen=limit) if limit is not None else deque()
 
-    def __call__(self, line: str) -> None:
+    def __call__(self, logger: Loggers, line: str) -> None:
         self.elements.append(line.rstrip())
         if self.live_print:
-            print_to_sdtout(line)
+            print_to_sdtout(logger, line)
 
     @property
     def json(self) -> Any:
@@ -36,38 +37,38 @@ class CmdLineBufferPrinter:
         return last
 
 
-StreamCallback = Union[Callable[[str], Any], CmdLineBufferPrinter]
+StreamCallback = Union[Callable[[Loggers, str], Any], CmdLineBufferPrinter]
 
 
-async def _read_stream(stream: Optional[asyncio.streams.StreamReader], callback: StreamCallback) -> None:
+async def _read_stream(stream: Optional[asyncio.streams.StreamReader],
+                       logger: Loggers,
+                       callback: StreamCallback) -> None:
     if stream is not None:
         while True:
             line = await stream.readline()
             if line:
-                callback(line.decode())
+                callback(logger, line.decode())
             else:
                 break
 
 
-async def _stream_subprocess(cmd: List[str],
-                             stdout_cb: StreamCallback,
-                             stderr_cb: StreamCallback,
-                             env: Optional[Mapping[str, str]],
-                             shell: bool = False) -> int:
+async def _stream_subprocess(cmd: List[str], logger: Loggers,
+                             stdout_cb: StreamCallback, stderr_cb: StreamCallback,
+                             env: Optional[Mapping[str, str]], shell: bool = False) -> int:
     shell_cmd = list_to_cmd(cmd)
     if shell:
         runner = partial(asyncio.create_subprocess_shell, shell_cmd)
     else:
         runner = partial(asyncio.create_subprocess_exec, *cmd)
 
-    logging.debug('[run] %s%s', shell_cmd, ' as shell command' if shell else '')
+    logger.debug('[run] %s%s', shell_cmd, ' as shell command' if shell else '')
     start = datetime.now()
     process = await runner(stdout=asyncio.subprocess.PIPE,
                            stderr=asyncio.subprocess.PIPE,
                            stdin=None,
                            env=env)
-    handlers = [_read_stream(process.stdout, stdout_cb),
-                _read_stream(process.stderr, stderr_cb)]
+    handlers = [_read_stream(process.stdout, logger, stdout_cb),
+                _read_stream(process.stderr, logger, stderr_cb)]
     await asyncio.wait(handlers)
     result_repr: Optional[str] = None
     try:
@@ -79,34 +80,33 @@ async def _stream_subprocess(cmd: List[str],
         raise
     finally:
         end = datetime.now()
-        logging.debug('[ran] in %s with %s %s%s', end - start,
-                      result_repr, shell_cmd, ' as shell command' if shell else '')
+        logger.debug('[ran] in %s with %s %s%s', end - start,
+                     result_repr, shell_cmd, ' as shell command' if shell else '')
 
 
-def print_to_sdtout(line: str, level: int = logging.DEBUG) -> None:
-    logging.log(level, line.rstrip())
+def print_to_sdtout(logger: Loggers, line: str, level: int = logging.DEBUG) -> None:
+    logger.log(level, line.rstrip())
 
 
-def print_to_sdterr(line: str, level: int = logging.DEBUG) -> None:
-    logging.log(level, line.rstrip())
+def print_to_sdterr(logger: Loggers, line: str, level: int = logging.DEBUG) -> None:
+    logger.log(level, line.rstrip())
 
 
-async def run(cmd: Cmd,
-              stdout: StreamCallback = print_to_sdtout,
-              stderr: StreamCallback = print_to_sdterr,
-              env: Optional[Mapping[str, str]] = None,
-              shell: bool = False,
-              exit_on_fail: bool = True) -> int:
+async def run(cmd: Cmd, logger: Loggers,
+              stdout: StreamCallback = print_to_sdtout, stderr: StreamCallback = print_to_sdterr,
+              env: Optional[Mapping[str, str]] = None, shell: bool = False, exit_on_fail: bool = True) -> int:
+    if logger is None:
+        logging.getLogger()
     type_safe_cmd: List[str] = [i if isinstance(i, str) else str(i) for i in cmd]
-    result_code = await _stream_subprocess(type_safe_cmd, stdout, stderr, env=env, shell=shell)
+    result_code = await _stream_subprocess(type_safe_cmd, logger, stdout, stderr, env=env, shell=shell)
     if exit_on_fail and result_code != 0:
         raise SystemExit(-1)
     return result_code
 
 
-def rm_dir(folder: Path, msg: str) -> None:
+def rm_dir(folder: Path, msg: str, logger: Loggers) -> None:
     if folder.exists():
-        logging.debug('%s => remove %r', msg, folder)
+        logger.debug('%s => remove %r', msg, folder)
         shutil.rmtree(str(folder))
 
 
