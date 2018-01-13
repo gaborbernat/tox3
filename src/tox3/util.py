@@ -11,7 +11,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Deque, Iterable, List, Mapping, Optional, Union, cast
 
-Cmd = Union[Iterable[Union[str, Path]]]
+Cmd = Iterable[Union[str, Path]]
 
 
 class CmdLineBufferPrinter:
@@ -49,17 +49,16 @@ async def _read_stream(stream: Optional[asyncio.streams.StreamReader], callback:
                 break
 
 
-async def _stream_subprocess(cmd: Cmd,
+async def _stream_subprocess(cmd: List[str],
                              stdout_cb: StreamCallback,
                              stderr_cb: StreamCallback,
                              env: Optional[Mapping[str, str]],
                              shell: bool = False) -> int:
+    shell_cmd = list_to_cmd(cmd)
     if shell:
-        runner = partial(asyncio.create_subprocess_shell, cmd)
-        shell_cmd = cmd
+        runner = partial(asyncio.create_subprocess_shell, shell_cmd)
     else:
         runner = partial(asyncio.create_subprocess_exec, *cmd)
-        shell_cmd = list_to_cmd(cmd)
 
     logging.debug('[run] %s%s', shell_cmd, ' as shell command' if shell else '')
     start = datetime.now()
@@ -98,9 +97,8 @@ async def run(cmd: Cmd,
               env: Optional[Mapping[str, str]] = None,
               shell: bool = False,
               exit_on_fail: bool = True) -> int:
-    if shell is False:
-        cmd = [i if isinstance(i, str) else str(i) for i in cmd]
-    result_code = await _stream_subprocess(cmd, stdout, stderr, env=env, shell=shell)
+    type_safe_cmd: List[str] = [i if isinstance(i, str) else str(i) for i in cmd]
+    result_code = await _stream_subprocess(type_safe_cmd, stdout, stderr, env=env, shell=shell)
     if exit_on_fail and result_code != 0:
         raise SystemExit(-1)
     return result_code
@@ -114,7 +112,7 @@ def rm_dir(folder: Path, msg: str) -> None:
 
 def list_to_cmd(args: List[str]) -> str:
     if sys.platform == 'win32':
-        converter = subprocess.list2cmdline  # type: ignore
+        converter = subprocess.list2cmdline
         package_list = cast(str, converter(args))
     else:
         package_list = ' '.join(shlex.quote(arg) for arg in args)

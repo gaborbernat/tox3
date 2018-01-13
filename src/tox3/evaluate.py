@@ -37,7 +37,7 @@ def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str) -> None:
         logging.debug('setup logging to %s', logging.getLevelName(level))
 
 
-def get_event_loop():
+def get_event_loop() -> asyncio.AbstractEventLoop:
     if sys.platform == 'win32':
         return asyncio.ProactorEventLoop()  # on windows IO needs this
     return asyncio.new_event_loop()  # default on UNIX is fine

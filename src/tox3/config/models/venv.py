@@ -27,5 +27,5 @@ class VEnvParams(NamedTuple):
 class Install(NamedTuple):
     batch_name: str
     packages: List[str]
-    base_cmd: str
+    base_cmd: List[str]
     use_develop: bool

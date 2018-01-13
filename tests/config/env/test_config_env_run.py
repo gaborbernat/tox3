@@ -11,10 +11,10 @@ async def test_posargs_extraction(conf):
 ''')
 
     conf: ToxConfig = await env.conf()
-    assert conf.env('py36').commands == ['pytest tests']
+    assert conf.env('py36').commands == [['pytest', 'tests']]
 
     conf: ToxConfig = await env.conf('--', '-vv')
-    assert conf.env('py36').commands == ['pytest tests -vv']
+    assert conf.env('py36').commands == [['pytest', 'tests', '-vv']]
 
     conf: ToxConfig = await env.conf('--', '<>', '<>')
-    assert conf.env('py36').commands == ["pytest tests '<>' '<>'"]
+    assert conf.env('py36').commands == [['pytest', 'tests', '<>', '<>']]

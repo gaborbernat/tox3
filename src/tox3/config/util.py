@@ -32,6 +32,4 @@ class Substitute:
         result = super().__getattribute__(item)
         if isinstance(result, str):
             return self._substitute(result)
-        elif isinstance(result, list):
-            return [self._substitute(i) for i in result]
         return result

@@ -1,7 +1,8 @@
 import argparse
 import re
+import shlex
 from pathlib import Path
-from typing import Optional, cast
+from typing import List, Optional, cast
 
 from tox3.venv import VEnv
 
@@ -64,5 +65,8 @@ class EnvConfig(CoreToxConfig):
         return self.name
 
     @property
-    def install_command(self) -> str:
-        return self._file.get('install_command', 'pip install -U')
+    def install_command(self) -> List[str]:
+        cmd = self._file.get('install_command')
+        if cmd is None:
+            return ['pip', 'install', '-U']
+        return shlex.split(cmd)

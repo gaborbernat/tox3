@@ -33,9 +33,9 @@ build-backend = 'setuptools.build_meta'
 
     py36 = conf.env('py36')
     assert py36.description == 'run the unit tests with pytest'
-    assert py36.commands == ['pytest tests']
+    assert py36.commands == [['pytest', 'tests']]
 
     dev = conf.env('dev')
     assert dev.description is None
-    assert dev.commands == ['']
+    assert dev.commands == []
     assert dev.deps == []

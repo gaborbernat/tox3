@@ -6,7 +6,7 @@ from typing import Optional
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import install_params
-from tox3.util import print_to_sdtout, run
+from tox3.util import list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
@@ -18,7 +18,7 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> None:
 
     env_vars = strip_env_vars(env.params.bin_path)
     for command in config.commands:
-        logging.info('[%s] run: %s', config.name, command)
+        logging.info('[%s] run: %s', config.name, list_to_cmd(command))
         await run(command, env=env_vars, shell=True, stdout=partial(print_to_sdtout, level=logging.INFO),
                   exit_on_fail=False)
 

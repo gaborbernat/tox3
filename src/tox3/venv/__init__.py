@@ -31,9 +31,10 @@ class VEnv:
 
     async def install(self, params: Install) -> None:
         if params.packages:
-            cmd = '{} {} {}'.format(params.base_cmd,
-                                    '-e' if params.use_develop else '',
-                                    list_to_cmd(params.packages))
+            cmd = list(params.base_cmd)
+            if params.use_develop:
+                cmd.append('-e')
+            cmd.extend(params.packages)
             await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True)
 
 

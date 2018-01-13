@@ -9,13 +9,14 @@ from .env import EnvConfig
 class RunEnvConfig(EnvConfig):
 
     @property
-    def commands(self) -> List[str]:
+    def commands(self) -> List[List[str]]:
         commands: List[str] = self._file.get('commands', [])
         result = []
         for command in commands:
             command = self._substitute(command).strip()
-            cmd = list_to_cmd(shlex.split(command))
-            result.append(cmd)
+            cmd = shlex.split(command)
+            if cmd:
+                result.append(cmd)
         return result
 
     @property

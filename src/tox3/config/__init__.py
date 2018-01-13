@@ -24,7 +24,7 @@ async def load(argv: Sequence[str]) -> ToxConfig:
     config_file: Union[Path, IO[str]] = options.__getattribute__('config')
     build_system, file = await from_toml(config_file)
 
-    work_dir_conf = Path(file.get('work_dir')) if 'work_dir' in file else None
+    work_dir_conf = Path(file['work_dir']) if 'work_dir' in file else None
     work_dir = root_dir(options, work_dir_conf)
 
     return ToxConfig(options, build_system, file, work_dir)
