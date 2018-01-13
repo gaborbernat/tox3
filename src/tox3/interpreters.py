@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import NamedTuple, Tuple
 
@@ -38,4 +39,6 @@ async def get_python_info(base_python_exe: Path, logger: Loggers) -> Tuple[str, 
 def get_interpreter(name: str) -> Path:
     # noinspection PyCallByClass
     binary = py.path.local.sysfind(name)
+    if binary is None:
+        raise RuntimeError('could not find {}, sys path {!r}'.format(name, os.environ.get('PATH')))
     return Path(binary)
