@@ -3,9 +3,9 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import IO, Sequence, Tuple, Union
+from typing import IO, Sequence, Tuple, Union, cast
 
-import configargparse
+import configargparse  # type: ignore
 
 import tox3
 from .util import VERBOSITY_TO_LOG_LEVEL
@@ -59,7 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
                         help="show list of all defined environments (with description if verbose)")
     parser.add_argument('args', nargs='*', help='additional arguments available to command positional substitution')
-    return parser
+    return cast(argparse.ArgumentParser, parser)
 
 
 def pre_process_flags(parser: argparse.ArgumentParser) -> None:

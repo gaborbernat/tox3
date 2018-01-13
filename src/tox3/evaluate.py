@@ -76,9 +76,12 @@ async def run(argv: Sequence[str]) -> int:
 
         for env_name in config.run_environments:
             logging.info('')
-            await run_env(config.env(env_name), config.build)
-
-        result = 0
+            result = await run_env(config.env(env_name), config.build)
+            if result:
+                break
+        else:
+            result = 0
     finally:
         logging.info('finished %s', datetime.datetime.now() - start)
     return result
+

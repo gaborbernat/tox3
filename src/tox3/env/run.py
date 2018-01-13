@@ -11,21 +11,24 @@ from tox3.util import list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
-async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> None:
+async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
     logger = EnvLogging(logging.getLogger(__name__), {'env': config.envname})
 
     env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
     config.venv = env
 
     await env_setup(build_config, config, env)
-
+    result = 0
     env_vars = strip_env_vars(env.params.bin_path)
     with change_dir(config.changedir, logger):
         for command in config.commands:
             logger.info('cmd: %s in %s', list_to_cmd(command), getcwd())
-            await run(command, logger=logger,
-                      stdout=partial(print_to_sdtout, level=logging.INFO), env=env_vars, shell=True,
-                      exit_on_fail=False)
+            result = await run(command, logger=logger,
+                               stdout=partial(print_to_sdtout, level=logging.INFO), env=env_vars, shell=True,
+                               exit_on_fail=False)
+            if result:
+                break
+    return result
 
 
 async def env_setup(build_config: BuildEnvConfig,

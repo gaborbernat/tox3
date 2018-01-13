@@ -31,11 +31,13 @@ class EnvLogging(logging.LoggerAdapter):
 
 @contextmanager
 def change_dir(to_dir: Path, logger: Loggers) -> Generator[None, None, None]:
-    cwd = os.getcwd()
-    logger.debug('change cwd to %r', to_dir)
-    os.chdir(str(to_dir))
+    cwd = Path(os.getcwd())
+    if cwd != to_dir:
+        logger.debug('change cwd to %r', to_dir)
+        os.chdir(str(to_dir))
     try:
         yield
     finally:
-        logger.debug('change cwd to %r', to_dir)
-        os.chdir(cwd)
+        if cwd != to_dir:
+            logger.debug('change cwd to %r', to_dir)
+            os.chdir(str(cwd))
