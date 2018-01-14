@@ -11,6 +11,10 @@ install_command = "pip install -U"
 extras = ['testing']
 commands = ['pytest --cov="<envsitepackagesdir>/tox3" --cov-report=term-missing:skip-covered tests <posargs>']
 
+[tool.tox3.env.set_env]
+COVERAGE_FILE="<work_dir>/.coverage.<envname>"
+
+
 [tool.tox3.env._build]
 basepython = 'python3.6'
 build_wheel = true

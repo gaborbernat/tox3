@@ -1,13 +1,14 @@
 import logging
+import sys
 from functools import partial
 from os import getcwd
 from pathlib import Path
-from typing import Optional
+from typing import MutableMapping, Optional
 
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.util import list_to_cmd, print_to_sdtout, run
+from tox3.util import Loggers, list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
@@ -19,7 +20,10 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
 
     await env_setup(build_config, config, env)
     result = 0
+
     env_vars = strip_env_vars(env.params.bin_path)
+    clean_env_vars(env_vars, config, logger)
+
     with change_dir(config.changedir, logger):
         for command in config.commands:
             logger.info('cmd: %s in %s', list_to_cmd(command), getcwd())
@@ -29,6 +33,38 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
             if result:
                 break
     return result
+
+
+def global_pass_env():
+    pass_env = {"PATH", "PIP_INDEX_URL", "LANG", "LANGUAGE", "LD_LIBRARY_PATH"}
+    if sys.platform == "win32":
+        pass_env.add("SYSTEMDRIVE")  # needed for pip6
+        pass_env.add("SYSTEMROOT")  # needed for python's crypto module
+        pass_env.add("PATHEXT")  # needed for discovering executables
+        pass_env.add("COMSPEC")  # needed for distutils cygwincompiler
+        pass_env.add("TEMP")
+        pass_env.add("TMP")
+        pass_env.add("NUMBER_OF_PROCESSORS")  # for `multiprocessing.cpu_count()` on Windows (prior to Python 3.4).
+        pass_env.add("PROCESSOR_ARCHITECTURE")  # platform.machine()
+        pass_env.add("USERPROFILE")  # needed for `os.path.expanduser()`
+        pass_env.add("MSYSTEM")  # fixes #429
+    else:
+        pass_env.add("TMPDIR")
+    return pass_env
+
+
+PASS_ENV_ALWAYS = global_pass_env()
+
+
+def clean_env_vars(env: MutableMapping[str, str], config: RunEnvConfig, logger: Loggers):
+    for key in list(env.keys()):
+        if key in PASS_ENV_ALWAYS or key in config.pass_env:
+            continue
+        logger.debug('remove env var %s=%r', key, env[key])
+        del env[key]
+    for key, value in config.set_env.items():
+        logger.debug('set env var %s=%r', key, value)
+        env[key] = value
 
 
 async def env_setup(build_config: BuildEnvConfig,
@@ -56,7 +92,7 @@ async def env_setup(build_config: BuildEnvConfig,
         else:
             project_package = build_config.built_package
         package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
-    await env.install(install_params(f'project',
-                                     [package],
-                                     config,
-                                     config.usedevelop))
+        await env.install(install_params(f'project',
+                                         [package],
+                                         config,
+                                         config.usedevelop))

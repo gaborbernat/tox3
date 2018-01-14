@@ -19,7 +19,7 @@ class ToxConfig(CoreToxConfig):
 
         def _raw_env(env_name: str) -> FileConf:
             env = self._file.get('env', {})
-            base = {k: v for k, v in env.items() if not isinstance(v, dict)}
+            base = {k: v for k, v in env.items() if k in {'set_env', } or not isinstance(v, dict)}
             if env_name in env:
                 base.update(env[env_name])
             return base
@@ -55,7 +55,7 @@ class ToxConfig(CoreToxConfig):
         return defined + run_defined
 
     def _is_extra_env(self, key: str, conf: Any) -> bool:
-        return isinstance(conf, dict) and key not in self.envs and key != BuildEnvConfig.NAME
+        return isinstance(conf, dict) and key not in self.envs and key not in {BuildEnvConfig.NAME, 'set_env'}
 
     @property
     def run_environments(self) -> List[str]:

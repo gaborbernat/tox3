@@ -2,7 +2,7 @@ import argparse
 import re
 import shlex
 from pathlib import Path
-from typing import List, Optional, cast
+from typing import Dict, List, Optional, cast
 
 from tox3.venv import VEnv
 from .core import CoreToxConfig
@@ -75,3 +75,14 @@ class EnvConfig(CoreToxConfig):
         if cmd is None:
             return ['pip', 'install', '-U']
         return shlex.split(cmd)
+
+    @property
+    def set_env(self) -> Dict[str, str]:
+        result: Dict[str, str] = {}
+        for key, value in self._file.get('set_env', {}).items():
+            result[key] = self._substitute(value)
+        return result
+
+    @property
+    def pass_env(self) -> List[str]:
+        return self._file.get('set_env', [])

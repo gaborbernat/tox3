@@ -3,14 +3,14 @@ import pickle
 import re
 import sys
 from pathlib import Path
-from typing import Mapping, Optional
+from typing import MutableMapping, Optional
 
 from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from tox3.interpreters import Python, find_python
 from tox3.util import CmdLineBufferPrinter, Loggers, rm_dir, run
 
 
-def strip_env_vars(bin_path: Path) -> Mapping[str, str]:
+def strip_env_vars(bin_path: Path) -> MutableMapping[str, str]:
     os_env = os.environ.copy()
     paths = os_env.get('PATH', '').split(os.pathsep)
     paths = [str(bin_path)] + paths
