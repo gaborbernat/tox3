@@ -1,5 +1,6 @@
 import logging
 import re
+from pathlib import Path
 from typing import Any, Set
 
 VERBOSITY_TO_LOG_LEVEL = {0: logging.ERROR,
@@ -32,4 +33,6 @@ class Substitute:
         result = super().__getattribute__(item)
         if isinstance(result, str):
             return self._substitute(result)
+        elif isinstance(result, Path):
+            return Path(self._substitute(str(result)))
         return result

@@ -12,18 +12,12 @@ from tox3.util import CmdLineBufferPrinter, rm_dir, run
 from tox3.venv import VEnv, setup as setup_venv
 
 LOGGER = EnvLogging(logging.getLogger(__name__), {'env': '_build'})
-TOX_BUILD_PY = 'TOX_BUILD_PY'
 
 
 async def create_install_package(config: BuildEnvConfig) -> None:
     name = '_build'
-    python_build_key = os.environ.get(TOX_BUILD_PY)
-    if python_build_key is None:
-        python = config.python
-    else:
-        python = config.resolve_python_key(python_build_key)
 
-    env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, python, LOGGER))
+    env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python, LOGGER))
     config.venv = env
     await env.install(install_params(f'build requires',
                                      config.build_requires,

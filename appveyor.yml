@@ -2,8 +2,7 @@ build: false  # Not a C# project
 environment:
   matrix:
     - PYTHON: "C:\\Python36"
-      TOX_ENV: "py"
-      TOX_BUILD_PY: "py"
+      ENV: "py"
 
 matrix:
   fast_finish: true
@@ -14,7 +13,7 @@ install:
 
 test_script:
   - python.exe -m pip list --format=columns
-  - python.exe -m tox3 -vvvv"
+  - python.exe -m tox3 -vvvv -e %ENV%
 
 cache:
   - '%LOCALAPPDATA%\pip\cache'

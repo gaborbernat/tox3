@@ -6,8 +6,7 @@ python:
   - 3.7-dev
   - nightly
 env:
-  TOX_ENV=py
-  TOX_BUILD_PY=py
+  ENV=py
 
 matrix:
   fast_finish: true
@@ -17,11 +16,15 @@ matrix:
   - python: nightly
   include:
     - python: 3.6
-      env: TOXENV=type
-    
+      env: ENV=type
+
 install:
   - pip install .
 
 script:
   - pip list --format=columns
-  - python -m tox3 -vvvv
+  - python -m tox3 -vvvv -e $ENV
+  
+after_success:
+  - export CODECOV_ENV="$ENV-$TRAVIS_PYTHON_VERSION"
+  - if [[ $ENV == "py" ]]; then python -m tox3 -vvvv -e codecov; fi

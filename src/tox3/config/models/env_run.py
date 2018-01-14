@@ -40,8 +40,8 @@ class RunEnvConfig(EnvConfig):
         return self._file.get('install_for_build_requires', False)
 
     @property
-    def usedevelop(self) -> bool:
-        return self._file.get('usedevelop', False)
+    def use_develop(self) -> bool:
+        return self._file.get('use_develop', False)
 
     @property
     def posargs(self) -> str:
@@ -49,8 +49,8 @@ class RunEnvConfig(EnvConfig):
         return list_to_cmd(args)
 
     @property
-    def changedir(self) -> Path:
-        change_dir = self._file.get('changedir')
+    def change_dir(self) -> Path:
+        change_dir = self._file.get('change_dir')
         if change_dir is None:
             return self.root_dir
         return Path(change_dir)

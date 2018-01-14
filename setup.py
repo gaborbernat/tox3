@@ -21,7 +21,7 @@ setup(
                       'virtualenv'],
     extras_require={'testing': ['pytest >= 3.0.0',
                                 'pytest-asyncio >= 0.8.0, <1',
-                                'pytest-cov >= 2.5.1']},
+                                'coverage >= 4.4.2']},
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Developers',
                  'License :: OSI Approved :: MIT License',

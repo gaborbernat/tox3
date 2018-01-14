@@ -10,6 +10,7 @@ from ..project import BuildSystem, FileConf
 
 
 class EnvConfig(CoreToxConfig):
+
     def __init__(self,
                  _options: argparse.Namespace,
                  build_system: BuildSystem,
@@ -23,10 +24,10 @@ class EnvConfig(CoreToxConfig):
 
     @property
     def python(self) -> str:
-        key = 'basepython'
-        if key in self._file:
-            return cast(str, self._file[key])
-        return self.resolve_python_key(self.name)
+        key = self._file.get('basepython')
+        if key is None:
+            return self.resolve_python_key(self.name)
+        return cast(str, key)
 
     @staticmethod
     def resolve_python_key(key: str) -> str:
@@ -85,4 +86,4 @@ class EnvConfig(CoreToxConfig):
 
     @property
     def pass_env(self) -> List[str]:
-        return self._file.get('set_env', [])
+        return self._file.get('pass_env', [])

@@ -16,9 +16,11 @@ async def test_setuptools_build(project):
             build-backend = 'setuptools.build_meta'
             
             [tool.tox3]
-            envlist = ['py36']
+            envlist = ['py']
+            
             [tool.tox3.env._build]
-            basepython="python3.6"
+            basepython="python"
+            
         ''',
         'setup.py': f'''
             from setuptools import setup, find_packages

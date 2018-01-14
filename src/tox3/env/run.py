@@ -1,9 +1,9 @@
 import logging
+import re
 import sys
 from functools import partial
-from os import getcwd
 from pathlib import Path
-from typing import MutableMapping, Optional
+from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
@@ -24,18 +24,20 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
     env_vars = strip_env_vars(env.params.bin_path)
     clean_env_vars(env_vars, config, logger)
 
-    with change_dir(config.changedir, logger):
+    with change_dir(config.change_dir, logger):
         for command in config.commands:
-            logger.info('cmd: %s in %s', list_to_cmd(command), getcwd())
+            logger.info('%s$ %s', config.change_dir, list_to_cmd(command))
             result = await run(command, logger=logger,
-                               stdout=partial(print_to_sdtout, level=logging.INFO), env=env_vars, shell=True,
+                               stdout=partial(print_to_sdtout, level=logging.INFO),
+                               stderr=partial(print_to_sdtout, level=logging.ERROR),
+                               env=env_vars, shell=True,
                                exit_on_fail=False)
             if result:
                 break
     return result
 
 
-def global_pass_env():
+def global_pass_env() -> Set[str]:
     pass_env = {"PATH", "PIP_INDEX_URL", "LANG", "LANGUAGE", "LD_LIBRARY_PATH"}
     if sys.platform == "win32":
         pass_env.add("SYSTEMDRIVE")  # needed for pip6
@@ -53,12 +55,29 @@ def global_pass_env():
     return pass_env
 
 
-PASS_ENV_ALWAYS = global_pass_env()
+PASS_ENV_ALWAYS: Set[str] = global_pass_env()
 
 
-def clean_env_vars(env: MutableMapping[str, str], config: RunEnvConfig, logger: Loggers):
+class EnvFilter:
+    def __init__(self, pass_env: Iterable[str]) -> None:
+        self.static = set(PASS_ENV_ALWAYS)
+        self.patterns: List[Pattern[str]] = []
+        for env in pass_env:
+            if '*' in env:
+                _pattern: Pattern[str] = re.compile(env.replace('*', '.*'))
+                self.patterns.append(_pattern)
+            else:
+                self.static.add(env)
+
+    def keep(self, key: str) -> bool:
+        return key in self.static or any(pattern.match(key) for pattern in self.patterns)
+
+
+def clean_env_vars(env: MutableMapping[str, str], config: RunEnvConfig, logger: Loggers) -> None:
+    env_filter = EnvFilter(config.pass_env)
     for key in list(env.keys()):
-        if key in PASS_ENV_ALWAYS or key in config.pass_env:
+        if env_filter.keep(key):
+            logger.debug('keep env var %s=%r', key, env[key])
             continue
         logger.debug('remove env var %s=%r', key, env[key])
         del env[key]
@@ -87,7 +106,7 @@ async def env_setup(build_config: BuildEnvConfig,
 
     extras = config.extras
     if build_config.skip is False:
-        if config.usedevelop:
+        if config.use_develop:
             project_package: Optional[Path] = config.root_dir
         else:
             project_package = build_config.built_package
@@ -95,4 +114,4 @@ async def env_setup(build_config: BuildEnvConfig,
         await env.install(install_params(f'project',
                                          [package],
                                          config,
-                                         config.usedevelop))
+                                         config.use_develop))
