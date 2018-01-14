@@ -86,3 +86,4 @@ def locate_via_py(logger: Loggers, v_maj: str, v_min: str) -> Optional[Path]:
                      exit_on_fail=False)
         if result:
             return Path(printer.last)
+    return None
