@@ -1,10 +1,10 @@
-.. image:: https://travis-ci.org/gaborbernat/tox3.svg?branch=master
+.. image:: https://travis-ci.org/gaborbernat/tox3.svg?branch=master&style=flat-square&label=Travis%20Build
     :target: https://travis-ci.org/gaborbernat/tox3
-.. image:: https://img.shields.io/appveyor/ci/gaborbernat/tox3/master.svg
+.. image:: https://img.shields.io/appveyor/ci/gaborbernat/tox3/master.svg?style=flat-square&logo=appveyor
     :target: https://ci.appveyor.com/project/gaborbernat/tox3
-.. image:: https://codecov.io/gh/gaborbernat/tox3/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/gaborbernat/tox3/branch/master/graph/badge.svg?style=flat-square
   :target: https://codecov.io/gh/gaborbernat/tox3
-.. image:: https://readthedocs.org/projects/tox3/badge/?version=latest
+.. image:: https://readthedocs.org/projects/tox3/badge/?version=latest&style=flat-square&label=Read%20the%20Docs
   :target: http://tox3.readthedocs.io/en/latest/?badge=latest
   :alt: Documentation Status
 
