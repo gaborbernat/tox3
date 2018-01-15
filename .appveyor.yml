@@ -1,19 +1,24 @@
 build: false  # Not a C# project
 environment:
   matrix:
-    - PYTHON: "C:\\Python36"
+    - PY_VER: "36"
       ENV: "py"
 
 matrix:
   fast_finish: true
 
 install:
-  - set PATH=%PYTHON%;%PATH%
+  - set PATH=C:\\Python%PY_VER%;%PATH%
   - python.exe  -m pip install -U .
 
 test_script:
   - python.exe -m pip list --format=columns
   - python.exe -m tox3 -vvvv -e %ENV%
+
+
+after_test:
+  - set CODECOV_ENV=%ENV%-%PY_VER%
+  - python.exe -m tox3 -vvvv -e codecov
 
 cache:
   - '%LOCALAPPDATA%\pip\cache'
