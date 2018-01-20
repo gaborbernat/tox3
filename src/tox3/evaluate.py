@@ -64,6 +64,10 @@ def main(argv: Sequence[str]) -> int:
         loop.close()
 
 
+def build_needs_install(config: ToxConfig):
+    return any(config.env(name).install_build for name in config.run_environments)
+
+
 async def run(argv: Sequence[str]) -> int:
     start = datetime.datetime.now()
     # noinspection PyUnusedLocal
@@ -71,7 +75,7 @@ async def run(argv: Sequence[str]) -> int:
     try:
         config: ToxConfig = await load_config(argv)
 
-        if config.build.skip is False:
+        if config.build.skip is False and build_needs_install(config):
             await create_install_package(config.build)
 
         for env_name in config.run_environments:
@@ -84,4 +88,3 @@ async def run(argv: Sequence[str]) -> int:
     finally:
         logging.info('finished %s', datetime.datetime.now() - start)
     return result
-

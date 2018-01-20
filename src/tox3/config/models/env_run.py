@@ -54,3 +54,7 @@ class RunEnvConfig(EnvConfig):
         if change_dir is None:
             return self.root_dir
         return Path(change_dir)
+
+    @property
+    def install_build(self) -> bool:
+        return not self._file.get('skip_install', False)

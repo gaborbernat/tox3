@@ -105,7 +105,7 @@ async def env_setup(build_config: BuildEnvConfig,
                                          config))
 
     extras = config.extras
-    if build_config.skip is False:
+    if build_config.skip is False and config.install_build:
         if config.use_develop:
             project_package: Optional[Path] = config.root_dir
         else:
