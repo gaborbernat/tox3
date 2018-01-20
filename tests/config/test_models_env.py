@@ -48,7 +48,5 @@ async def test_base_python_implicit(conf, env_name, python):
     [tool.tox3.env.{env_name}]
     ''')
     conf: ToxConfig = await env.conf()
-    with pytest.raises(ValueError) as exc:
-        assert conf.build.python
-    assert exc.value.args == ('no base python for _build',)
+    assert conf.build.python == 'python'
     assert conf.env(env_name).python == python

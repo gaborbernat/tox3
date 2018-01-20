@@ -1,18 +1,10 @@
-# build system
 [build-system]
 requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools.build_meta'
 
 # tox configuration
 [tool.tox3]
-envlist = ['py36', 'combine', 'type', 'doc']
-
-[tool.tox3.env]
-basepython = 'python'
-install_command = "pip install -U"
-
-[tool.tox3.env._build]
-build_wheel = true
+envlist = ['py36', 'type', 'doc']
 
 [tool.tox3.env.py36]
 basepython="python3.6"
@@ -24,7 +16,8 @@ set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
 extras = ['testing']
 
 [tool.tox3.env.py]
-description = 'run the unit tests with pytest and whatever the current python is'
+basepython = 'python'
+description = '[CI] run the unit tests with pytest and whatever the current python is'
 change_dir = '<envsitepackagesdir>'
 commands = ['coverage run --rcfile="<root_dir>/setup.cfg" --source=tox3  -m pytest <posargs> "<root_dir>/tests"',
              'coverage report --rcfile="<root_dir>/setup.cfg"']
@@ -52,7 +45,7 @@ commands = [ 'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out
              'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
 
 [tool.tox3.env.dev]
-extras = ['testing']
+extras = ['testing', 'doc']
 use_develop = true
 install_build_requires = true
 install_for_build_requires = true

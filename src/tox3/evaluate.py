@@ -7,7 +7,7 @@ from typing import Sequence
 import colorlog  # type: ignore
 
 from .config import ToxConfig, load as load_config
-from .config.cli import VERBOSITY_TO_LOG_LEVEL, get_logging
+from .config.cli import get_logging
 from .env import create_install_package, run_env
 
 LOGGER = logging.getLogger()
@@ -18,15 +18,13 @@ def _clean_handlers(log: logging.Logger) -> None:
         log.removeHandler(log_handler)
 
 
-def _setup_logging(verbose: bool, quiet: bool, logging_fmt: str) -> None:
+def _setup_logging(verbose: str, quiet: bool, logging_fmt: str) -> None:
     """Setup logging."""
     _clean_handlers(LOGGER)
-    if verbose is None:
-        verbose = 0
     if quiet:
         LOGGER.addHandler(logging.NullHandler())
     else:
-        level = VERBOSITY_TO_LOG_LEVEL.get(verbose, logging.DEBUG)
+        level = getattr(logging, verbose)
         fmt = f'%(log_color)s{logging_fmt}'
         formatter = colorlog.ColoredFormatter(fmt)
         stream_handler = logging.StreamHandler(stream=sys.stderr)
@@ -64,7 +62,7 @@ def main(argv: Sequence[str]) -> int:
         loop.close()
 
 
-def build_needs_install(config: ToxConfig):
+def build_needs_install(config: ToxConfig) -> bool:
     return any(config.env(name).install_build for name in config.run_environments)
 
 

@@ -3,15 +3,18 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import IO, Sequence, Tuple, Union, cast
+from typing import IO, List, Sequence, Tuple, Union, cast
 
 import configargparse  # type: ignore
 
 import tox3
-from .util import VERBOSITY_TO_LOG_LEVEL
 
 CONFIG_FILE_NAME = 'pyproject.toml'
 TOX_ENV = 'TOX_ENV'
+
+
+def level_names() -> List[str]:
+    return [logging.getLevelName(x) for x in range(1, 101) if not logging.getLevelName(x).startswith('Level')]
 
 
 def find_config(config: Union[None, Path, IO[str]]) -> Union[Path, IO[str]]:
@@ -66,16 +69,15 @@ def build_parser() -> argparse.ArgumentParser:
 def pre_process_flags(parser: argparse.ArgumentParser) -> None:
     parser.add_argument('--logging', default='%(message)s',
                         help='tools logging format', dest='logging')
-    levels = ', '.join('{} -> {}'.format(c, logging.getLevelName(l)) for c, l in sorted(VERBOSITY_TO_LOG_LEVEL.items()))
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-v', '--verbosity', action='count', dest='verbose',
-                       help='control log level towards stderr (may be passed multiple times - {})'.format(levels),
-                       default=0)
+    group.add_argument('-v', '--verbosity', type=str, dest='verbose',
+                       help='control log level towards stderr', choices=level_names(),
+                       default=logging.getLevelName(logging.INFO))
     group.add_argument('-q', '--quiet', action='store_true', dest='quiet', default=False,
                        help='do not print log messages')
 
 
-def get_logging(argv: Sequence[str]) -> Tuple[bool, bool, str]:
+def get_logging(argv: Sequence[str]) -> Tuple[str, bool, str]:
     parser = argparse.ArgumentParser(add_help=False)
     pre_process_flags(parser)
     options, _ = parser.parse_known_args(argv)

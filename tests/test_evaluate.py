@@ -5,7 +5,7 @@ from tox3.evaluate import main
 
 
 def test_help(capsys):
-    code = main(['--help'])
+    code = main(['--help', '-v', 'WARNING'])
     assert code == 0
 
     out, err = capsys.readouterr()

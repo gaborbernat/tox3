@@ -36,7 +36,7 @@ class EnvConfig(CoreToxConfig):
             major = match.group(1)
             minor = match.group(2)
             return 'python{}{}'.format(major, '' if not minor else f'.{minor}')
-        raise ValueError('no base python for {}'.format(key))
+        return 'python'  # fallback to the default python
 
     @property
     def recreate(self) -> bool:
