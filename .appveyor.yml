@@ -13,12 +13,12 @@ install:
 
 test_script:
   - python.exe -m pip list --format=columns
-  - python.exe -m tox3 -vvvv -e %ENV%
+  - python.exe -m tox3 -v DEBUG -e %ENV%
 
 
 after_test:
   - set CODECOV_ENV=%ENV%-%PY_VER%
-  - python.exe -m tox3 -vvvv -e codecov
+  - python.exe -m tox3 -v DEBUG -e codecov
 
 cache:
   - '%LOCALAPPDATA%\pip\cache'

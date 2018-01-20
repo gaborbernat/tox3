@@ -10,7 +10,8 @@ from .config import ToxConfig, load as load_config
 from .config.cli import get_logging
 from .env import create_install_package, run_env
 
-LOGGER = logging.getLogger()
+ROOT_LOGGER = logging.getLogger()
+LOGGER = logging.getLogger('main')
 
 
 def _clean_handlers(log: logging.Logger) -> None:
@@ -20,19 +21,19 @@ def _clean_handlers(log: logging.Logger) -> None:
 
 def _setup_logging(verbose: str, quiet: bool, logging_fmt: str) -> None:
     """Setup logging."""
-    _clean_handlers(LOGGER)
+    _clean_handlers(ROOT_LOGGER)
     if quiet:
-        LOGGER.addHandler(logging.NullHandler())
+        ROOT_LOGGER.addHandler(logging.NullHandler())
     else:
         level = getattr(logging, verbose)
         fmt = f'%(log_color)s{logging_fmt}'
         formatter = colorlog.ColoredFormatter(fmt)
         stream_handler = logging.StreamHandler(stream=sys.stderr)
         stream_handler.setLevel(level)
-        LOGGER.setLevel(level)
+        ROOT_LOGGER.setLevel(level)
         stream_handler.setFormatter(formatter)
-        LOGGER.addHandler(stream_handler)
-        logging.debug('setup logging to %s', logging.getLevelName(level))
+        ROOT_LOGGER.addHandler(stream_handler)
+        LOGGER.debug('setup logging to %s', logging.getLevelName(level))
 
 
 def get_event_loop() -> asyncio.AbstractEventLoop:
@@ -45,18 +46,18 @@ def main(argv: Sequence[str]) -> int:
     _setup_logging(*get_logging(argv))
 
     loop = get_event_loop()
-    logging.debug('event loop %r', loop)
+    LOGGER.debug('event loop %r', loop)
 
     # noinspection PyBroadException
     try:
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(run(argv))
-        logging.debug('done with %s', result)
+        LOGGER.debug('done with %s', result)
         return result
     except SystemExit as exc:
         return exc.code
     except Exception:
-        logging.exception('failure')
+        LOGGER.exception('failure')
         return -1
     finally:
         loop.close()
@@ -77,12 +78,12 @@ async def run(argv: Sequence[str]) -> int:
             await create_install_package(config.build)
 
         for env_name in config.run_environments:
-            logging.info('')
+            LOGGER.info('')
             result = await run_env(config.env(env_name), config.build)
             if result:
                 break
         else:
             result = 0
     finally:
-        logging.info('finished %s', datetime.datetime.now() - start)
+        LOGGER.info('finished %s', datetime.datetime.now() - start)
     return result
