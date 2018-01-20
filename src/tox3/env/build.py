@@ -42,9 +42,9 @@ async def create_install_package(config: BuildEnvConfig) -> None:
             config.built_package = result
         for command in config.teardown_commands:
             LOGGER.info('teardown: %s$ %s', config.root_dir, list_to_cmd(command))
-            result = await run(command, logger=LOGGER, shell=True,
-                               exit_on_fail=True)
-            if result:
+            result_code = await run(command, logger=LOGGER, shell=True,
+                                    exit_on_fail=True)
+            if result_code:
                 break
     finally:
         LOGGER.info('built %s in %s', result, human_timedelta(datetime.datetime.now() - start))

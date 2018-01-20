@@ -25,7 +25,7 @@ class EnvLogging(logging.LoggerAdapter):
         if env is None:
             env_info = ''
         else:
-            env_info = f'[{env}]'
+            env_info = f'[{env}] '
         return f"{env_info}{msg}", kwargs
 
 

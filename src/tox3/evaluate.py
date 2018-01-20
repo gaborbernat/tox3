@@ -66,7 +66,7 @@ def main(argv: Sequence[str]) -> int:
 
 
 def build_needs_install(config: ToxConfig) -> bool:
-    return any(config.env(name).install_build for name in config.run_environments)
+    return any(config.env(name).install_build and not config.env(name).use_develop for name in config.run_environments)
 
 
 async def run(argv: Sequence[str]) -> int:
@@ -109,10 +109,15 @@ async def list_envs(config: ToxConfig) -> int:
 
 
 async def run_tox_envs(config: ToxConfig) -> int:
-    if config.build.skip is False and build_needs_install(config):
+    run_build = config.build.skip is False and build_needs_install(config)
+    if run_build:
         await create_install_package(config.build)
     results = []
+    empty_line = run_build
     for env_name in config.run_environments:
-        LOGGER.info('')
+        if empty_line:
+            LOGGER.info('')
+        else:
+            empty_line = True
         results.append(await run_env(config.env(env_name), config.build))
     return 1 if any(r for r in results) else 0

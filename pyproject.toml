@@ -14,8 +14,7 @@ tear_down_commands = ["python setup.py clean --all",
 basepython="python3.6"
 description = 'run the unit tests with pytest and coverage report'
 change_dir = '<envsitepackagesdir>'
-commands = ['coverage run --rcfile="<root_dir>/setup.cfg" --source=tox3  -m pytest <posargs> "<root_dir>/tests"',
-             'coverage report --rcfile="<root_dir>/setup.cfg"']
+commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=tox3 "<root_dir>/tests" <posargs> -n auto']
 set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
 extras = ['testing']
 
@@ -23,8 +22,7 @@ extras = ['testing']
 basepython = 'python'
 description = '[CI] run the unit tests with pytest and whatever the current python is with coverage report'
 change_dir = '<envsitepackagesdir>'
-commands = ['coverage run --rcfile="<root_dir>/setup.cfg" --source=tox3  -m pytest <posargs> "<root_dir>/tests"',
-             'coverage report --rcfile="<root_dir>/setup.cfg"']
+commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=tox3 "<root_dir>/tests" <posargs> -n auto']
 set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
 extras = ['testing']
 

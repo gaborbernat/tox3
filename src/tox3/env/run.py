@@ -18,7 +18,7 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
     logger = EnvLogging(logging.getLogger(__name__), {'env': config.envname})
     result = 0
     try:
-
+        logger.info('start setup')
         env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
         config.venv = env
 
