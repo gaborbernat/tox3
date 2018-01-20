@@ -39,7 +39,6 @@ deps = ["mypy >= 0.560, <1"]
 commands = ["python -m mypy src --strict"]
 
 [tool.tox3.env.doc]
-skip_install = true
 extras = ['doc']
 commands = [ 'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html',
              'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
