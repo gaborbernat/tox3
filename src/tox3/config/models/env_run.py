@@ -1,4 +1,3 @@
-import shlex
 from pathlib import Path
 from typing import List, Optional
 
@@ -10,14 +9,7 @@ class RunEnvConfig(EnvConfig):
 
     @property
     def commands(self) -> List[List[str]]:
-        commands: List[str] = self._file.get('commands', [])
-        result = []
-        for command in commands:
-            command = self._substitute(command).strip()
-            cmd = shlex.split(command)
-            if cmd:
-                result.append(cmd)
-        return result
+        return self._extract_command(self._file.get('commands', []))
 
     @property
     def extras(self) -> List[str]:

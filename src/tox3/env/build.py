@@ -2,14 +2,13 @@
 import datetime
 import logging
 import os
-import shutil
 from pathlib import Path
 from typing import List, Optional, cast
 
 from tox3.config import BuildEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.util import CmdLineBufferPrinter, human_timedelta, rm_dir, run
+from tox3.util import CmdLineBufferPrinter, human_timedelta, list_to_cmd, rm_dir, run
 from tox3.venv import VEnv, setup as setup_venv
 
 LOGGER = EnvLogging(logging.getLogger(__name__), {'env': '_build'})
@@ -38,11 +37,15 @@ async def create_install_package(config: BuildEnvConfig) -> None:
                                                  config.for_build_requires,
                                                  config))
 
-            await _clean(config, env.params.executable)
             result = await _build(env, out_dir, config.build_type,
                                   config.build_backend_base, config.build_backend_full)
             config.built_package = result
-        await _clean(config, env.params.executable)
+        for command in config.teardown_commands:
+            LOGGER.info('teardown: %s$ %s', config.root_dir, list_to_cmd(command))
+            result = await run(command, logger=LOGGER, shell=True,
+                               exit_on_fail=True)
+            if result:
+                break
     finally:
         LOGGER.info('built %s in %s', result, human_timedelta(datetime.datetime.now() - start))
 
@@ -96,15 +99,3 @@ async def _make_and_clean_out_dir(env: VEnv) -> Path:
                 break
     os.makedirs(str(out_dir), exist_ok=True)
     return out_dir
-
-
-async def _clean(config: BuildEnvConfig, executable: Path) -> None:
-    LOGGER.debug('clean package dir')
-
-    await run([str(executable), 'setup.py', 'clean', '--all'], logger=LOGGER)
-
-    for path in [config.root_dir / 'dist',
-                 config.root_dir / '.eggs']:
-        if path.exists():
-            logging.debug('clean %r', path)
-            shutil.rmtree(str(path))

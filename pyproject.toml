@@ -6,6 +6,10 @@ build-backend = 'setuptools.build_meta'
 [tool.tox3]
 envlist = ['py36', 'type', 'doc']
 
+[tool.tox3.env._build]
+tear_down_commands = ["python setup.py clean --all",
+                      """python -c 'import shutil; shutil.rmtree(\"dist\", True); shutil.rmtree(\".eggs\", True)'"""]
+
 [tool.tox3.env.py36]
 basepython="python3.6"
 description = 'run the unit tests with pytest and coverage report'

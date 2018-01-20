@@ -59,3 +59,7 @@ class BuildEnvConfig(EnvConfig):
     @property
     def skip(self) -> bool:
         return self._file.get('skip', False)
+
+    @property
+    def teardown_commands(self) -> List[List[str]]:
+        return self._extract_command(self._file.get('tear_down_commands', []))
