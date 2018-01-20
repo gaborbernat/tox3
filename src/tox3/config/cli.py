@@ -60,9 +60,11 @@ def build_parser() -> argparse.ArgumentParser:
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
                         help='run only this run environments', nargs="+", type=str, env_var=TOX_ENV)
-    parser.add_argument("-l", "--list", action="store_true", dest="list_envs",
-                        help="show list of all defined environments (with description if verbose)")
-    parser.add_argument('args', nargs='*', help='additional arguments available to command positional substitution')
+    parser.add_argument('args', nargs='*', help='additional arguments passed to positional substitutions')
+
+    parser.add_argument('-a', '--action', choices=['run', 'list', 'list-bare', 'list-default-bare'],
+                        default='run')
+
     return cast(argparse.ArgumentParser, parser)
 
 

@@ -1,4 +1,5 @@
 """build the project"""
+import datetime
 import logging
 import os
 import shutil
@@ -8,37 +9,42 @@ from typing import List, Optional, cast
 from tox3.config import BuildEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.util import CmdLineBufferPrinter, rm_dir, run
+from tox3.util import CmdLineBufferPrinter, human_timedelta, rm_dir, run
 from tox3.venv import VEnv, setup as setup_venv
 
 LOGGER = EnvLogging(logging.getLogger(__name__), {'env': '_build'})
 
 
 async def create_install_package(config: BuildEnvConfig) -> None:
+    start = datetime.datetime.now()
+    result = None
     name = '_build'
+    try:
+        LOGGER.info('build project %s as %s', config.root_dir, config.build_type)
+        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python, LOGGER))
+        config.venv = env
+        await env.install(install_params(f'build requires',
+                                         config.build_requires,
+                                         config))
 
-    env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python, LOGGER))
-    config.venv = env
-    await env.install(install_params(f'build requires',
-                                     config.build_requires,
-                                     config))
+        out_dir = await _make_and_clean_out_dir(env)
 
-    out_dir = await _make_and_clean_out_dir(env)
+        with change_dir(config.root_dir, LOGGER):
+            if config.build_backend is not None:
+                config.for_build_requires = await _get_requires_for_build(env, config.build_type,
+                                                                          cast(str, config.build_backend_base),
+                                                                          cast(str, config.build_backend_full))
+                await env.install(install_params(f'for build requires',
+                                                 config.for_build_requires,
+                                                 config))
 
-    with change_dir(config.root_dir, LOGGER):
-        if config.build_backend is not None:
-            config.for_build_requires = await _get_requires_for_build(env, config.build_type,
-                                                                      cast(str, config.build_backend_base),
-                                                                      cast(str, config.build_backend_full))
-            await env.install(install_params(f'for build requires',
-                                             config.for_build_requires,
-                                             config))
-
+            await _clean(config, env.params.executable)
+            result = await _build(env, out_dir, config.build_type,
+                                  config.build_backend_base, config.build_backend_full)
+            config.built_package = result
         await _clean(config, env.params.executable)
-        result = await _build(env, out_dir, config.build_type,
-                              config.build_backend_base, config.build_backend_full)
-        config.built_package = result
-        await _clean(config, env.params.executable)
+    finally:
+        LOGGER.info('built %s in %s', result, human_timedelta(datetime.datetime.now() - start))
 
 
 async def _build(env: VEnv,
@@ -61,7 +67,6 @@ print(basename)
         await run([env.params.executable, 'setup.py', build_cmd, '--dist-dir', out_dir, "--formats=zip"], logger=LOGGER)
         # noinspection PyTypeChecker
         result = next(out_dir.iterdir())
-    LOGGER.info('built %s', result)
     return result
 
 
@@ -94,7 +99,7 @@ async def _make_and_clean_out_dir(env: VEnv) -> Path:
 
 
 async def _clean(config: BuildEnvConfig, executable: Path) -> None:
-    LOGGER.info('clean package dir')
+    LOGGER.debug('clean package dir')
 
     await run([str(executable), 'setup.py', 'clean', '--all'], logger=LOGGER)
 

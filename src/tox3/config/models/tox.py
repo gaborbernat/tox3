@@ -17,6 +17,22 @@ class ToxConfig(CoreToxConfig):
                  work_dir: Path) -> None:
         super().__init__(options, build_system, file, work_dir)
 
+        def _is_extra_env(key: str, conf: Any) -> bool:
+            return isinstance(conf, dict) and \
+                   key not in self.default_run_environments and \
+                   key not in {BuildEnvConfig.NAME, 'set_env'}
+
+        self.default_run_environments: List[str] = cast(List[str], self._file.get('envlist', []))
+        self.extra_defined_environments: List[str] = [k for k, v in self._file.get('env', {}).items() if
+                                                      _is_extra_env(k, v)]
+        defined = self.default_run_environments + self.extra_defined_environments
+
+        environments = cast(List[str], getattr(self._options, 'environments', []))
+        self.run_environments: List[str] = environments if environments else self.default_run_environments
+        self.run_defined_environments = self._run_defined_environments(defined)
+
+        self.environments: List[str] = defined + self.run_defined_environments
+
         def _raw_env(env_name: str) -> FileConf:
             env = self._file.get('env', {})
             base = {k: v for k, v in env.items() if k in {'set_env', } or not isinstance(v, dict)}
@@ -33,34 +49,19 @@ class ToxConfig(CoreToxConfig):
                                                                build_system,
                                                                _raw_env(k),
                                                                work_dir, k) for k in
-                                               self.all_envs}
+                                               self.environments}
 
-    @property
-    def envs(self) -> List[str]:
-        return cast(List[str], self._file.get('envlist', []))
-
-    @property
-    def all_envs(self) -> List[str]:
-        # environments enlisted to be called by default
-        explicit: List[str] = self.envs
-        # environments that have config values, even though not called by default
-        implicit: List[str] = [k for k, v in self._file.get('env', {}).items() if self._is_extra_env(k, v)]
-
-        defined = explicit + implicit
+    def _run_defined_environments(self, defined: List[str]) -> List[str]:
         # environments that are invoked on demand
         run_defined: List[str] = []
         for env in self.run_environments:
             if env not in defined:
                 run_defined.append(env)
-        return defined + run_defined
-
-    def _is_extra_env(self, key: str, conf: Any) -> bool:
-        return isinstance(conf, dict) and key not in self.envs and key not in {BuildEnvConfig.NAME, 'set_env'}
-
-    @property
-    def run_environments(self) -> List[str]:
-        environments = cast(List[str], self._options.__getattribute__('environments'))
-        return environments if environments else self.envs
+        return run_defined
 
     def env(self, env_name: str) -> RunEnvConfig:
         return self._envs[env_name]
+
+    @property
+    def action(self) -> str:
+        return cast(str, getattr(self._options, 'action'))

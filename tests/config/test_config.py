@@ -30,8 +30,8 @@ build-backend = 'setuptools.build_meta'
     assert conf.build.build_backend == 'setuptools.build_meta'
     assert conf.build.build_requires == ['setuptools >= 38.2.4']
 
-    assert conf.envs == ['py36']
-    assert conf.all_envs == ['py36', 'dev']
+    assert conf.default_run_environments == ['py36']
+    assert conf.environments == ['py36', 'dev']
 
     py36 = conf.env('py36')
     assert py36.description == 'run the unit tests with pytest'

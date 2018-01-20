@@ -2,10 +2,12 @@ import asyncio
 import datetime
 import logging
 import sys
-from typing import Sequence
+from itertools import chain
+from typing import List, Sequence
 
 import colorlog  # type: ignore
 
+from tox3.util import human_timedelta
 from .config import ToxConfig, load as load_config
 from .config.cli import get_logging
 from .env import create_install_package, run_env
@@ -71,19 +73,46 @@ async def run(argv: Sequence[str]) -> int:
     start = datetime.datetime.now()
     # noinspection PyUnusedLocal
     result: int = 1
-    try:
-        config: ToxConfig = await load_config(argv)
-
-        if config.build.skip is False and build_needs_install(config):
-            await create_install_package(config.build)
-
-        for env_name in config.run_environments:
-            LOGGER.info('')
-            result = await run_env(config.env(env_name), config.build)
-            if result:
-                break
-        else:
-            result = 0
-    finally:
-        LOGGER.info('finished %s', datetime.datetime.now() - start)
+    config: ToxConfig = await load_config(argv)
+    if config.action == 'run':
+        try:
+            result = await run_tox_envs(config)
+        finally:
+            LOGGER.info('finished %s with %s', human_timedelta(datetime.datetime.now() - start), result)
+    elif config.action == 'list':
+        result = await list_envs(config)
+    elif config.action == 'list-bare':
+        for env in config.environments:
+            LOGGER.info(env)
+    elif config.action == 'list-default-bare':
+        for env in config.default_run_environments:
+            LOGGER.info(env)
     return result
+
+
+async def list_envs(config: ToxConfig) -> int:
+    width = max(len(e) for e in chain(config.default_run_environments,
+                                      config.extra_defined_environments,
+                                      config.run_defined_environments))
+
+    def print_envs(environments: List[str], type_info: str) -> None:
+        if environments:
+            LOGGER.info(f'{type_info}:')
+        for env in environments:
+            env_str = env.ljust(width)
+            LOGGER.info(f'{env_str} -> {config.env(env).description}')
+
+    print_envs(config.default_run_environments, 'default environments')
+    print_envs(config.extra_defined_environments, 'extra defined environments')
+    print_envs(config.run_defined_environments, 'run defined environments')
+    return 0
+
+
+async def run_tox_envs(config: ToxConfig) -> int:
+    if config.build.skip is False and build_needs_install(config):
+        await create_install_package(config.build)
+    results = []
+    for env_name in config.run_environments:
+        LOGGER.info('')
+        results.append(await run_env(config.env(env_name), config.build))
+    return 1 if any(r for r in results) else 0

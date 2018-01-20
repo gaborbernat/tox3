@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Deque, Iterable, List, Mapping, Optional, Union, cast
@@ -117,3 +117,11 @@ def list_to_cmd(args: List[str]) -> str:
     else:
         package_list = ' '.join(shlex.quote(arg) for arg in args)
     return package_list
+
+
+def human_timedelta(arg: timedelta) -> str:
+    result = ''
+    if arg.days:
+        result += f' {timedelta.days} days'
+    result += f' {arg.seconds}.{arg.microseconds} seconds'
+    return result[1:]

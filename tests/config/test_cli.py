@@ -19,5 +19,5 @@ async def test_project_source(conf, explicit, monkeypatch):
     assert conf.build.build_backend is None
     assert conf.build.build_requires == []
 
-    assert conf.envs == []
-    assert conf.all_envs == []
+    assert conf.default_run_environments == []
+    assert conf.environments == []

@@ -8,7 +8,7 @@ envlist = ['py36', 'type', 'doc']
 
 [tool.tox3.env.py36]
 basepython="python3.6"
-description = 'run the unit tests with pytest'
+description = 'run the unit tests with pytest and coverage report'
 change_dir = '<envsitepackagesdir>'
 commands = ['coverage run --rcfile="<root_dir>/setup.cfg" --source=tox3  -m pytest <posargs> "<root_dir>/tests"',
              'coverage report --rcfile="<root_dir>/setup.cfg"']
@@ -17,7 +17,7 @@ extras = ['testing']
 
 [tool.tox3.env.py]
 basepython = 'python'
-description = '[CI] run the unit tests with pytest and whatever the current python is'
+description = '[CI] run the unit tests with pytest and whatever the current python is with coverage report'
 change_dir = '<envsitepackagesdir>'
 commands = ['coverage run --rcfile="<root_dir>/setup.cfg" --source=tox3  -m pytest <posargs> "<root_dir>/tests"',
              'coverage report --rcfile="<root_dir>/setup.cfg"']
@@ -27,7 +27,7 @@ extras = ['testing']
 [tool.tox3.env.codecov]
 skip_install = true
 pass_env = ["CI", "TRAVIS", "TRAVIS_*", "CODECOV_ENV", "APPVEYOR_*", "APPVEYOR"]
-description = "[only run on CI]: upload coverage data to codecov (depends on coverage running first)"
+description = "[CI]: upload coverage data to codecov (depends on coverage running first)"
 deps = ["codecov >= 2.0.13, <3"]
 set_env = {COVERAGE_FILE="<work_dir>/.coverage"}
 commands = ['coverage combine --rcfile="<root_dir>/setup.cfg"',
@@ -35,15 +35,18 @@ commands = ['coverage combine --rcfile="<root_dir>/setup.cfg"',
              'codecov --file "<work_dir>/coverage.xml"']
 
 [tool.tox3.env.type]
+description = "run mypy and check for type violations of the code base"
 deps = ["mypy >= 0.560, <1"]
 commands = ["python -m mypy src --strict"]
 
 [tool.tox3.env.doc]
+description = "generate the project documenntation into <work_dir>/docs_out"
 extras = ['doc']
 commands = [ 'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html',
              'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
 
 [tool.tox3.env.dev]
+description = "generates a development environment with all this projects dependencies, and in-place install of the package"
 extras = ['testing', 'doc']
 use_develop = true
 install_build_requires = true

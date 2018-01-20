@@ -1,3 +1,4 @@
+import datetime
 import logging
 import re
 import sys
@@ -8,33 +9,38 @@ from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.util import Loggers, list_to_cmd, print_to_sdtout, run
+from tox3.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
 async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
+    start = datetime.datetime.now()
     logger = EnvLogging(logging.getLogger(__name__), {'env': config.envname})
-
-    env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
-    config.venv = env
-
-    await env_setup(build_config, config, env)
     result = 0
+    try:
 
-    env_vars = strip_env_vars(env.params.bin_path)
-    clean_env_vars(env_vars, config, logger)
+        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
+        config.venv = env
 
-    with change_dir(config.change_dir, logger):
-        for command in config.commands:
-            logger.info('%s$ %s', config.change_dir, list_to_cmd(command))
-            result = await run(command, logger=logger,
-                               stdout=partial(print_to_sdtout, level=logging.INFO),
-                               stderr=partial(print_to_sdtout, level=logging.ERROR),
-                               env=env_vars, shell=True,
-                               exit_on_fail=False)
-            if result:
-                break
-    return result
+        await env_setup(build_config, config, env)
+
+        env_vars = strip_env_vars(env.params.bin_path)
+        clean_env_vars(env_vars, config, logger)
+
+        with change_dir(config.change_dir, logger):
+            logger.info('setup in %s', human_timedelta(datetime.datetime.now() - start))
+            for command in config.commands:
+                logger.info('%s$ %s', config.change_dir, list_to_cmd(command))
+                result = await run(command, logger=logger,
+                                   stdout=partial(print_to_sdtout, level=logging.INFO),
+                                   stderr=partial(print_to_sdtout, level=logging.ERROR),
+                                   env=env_vars, shell=True,
+                                   exit_on_fail=False)
+                if result:
+                    break
+        return result
+    finally:
+        logger.info('done in %s with %s', human_timedelta(datetime.datetime.now() - start), result)
 
 
 def global_pass_env() -> Set[str]:
