@@ -112,12 +112,20 @@ async def run_tox_envs(config: ToxConfig) -> int:
     run_build = config.build.skip is False and build_needs_install(config)
     if run_build:
         await create_install_package(config.build)
-    results = []
-    empty_line = run_build
-    for env_name in config.run_environments:
-        if empty_line:
-            LOGGER.info('')
-        else:
-            empty_line = True
-        results.append(await run_env(config.env(env_name), config.build))
+
+    if config.run_parallel:
+        futures = []
+        loop = asyncio.get_event_loop()
+        for env_name in config.run_environments:
+            futures.append(loop.create_task(run_env(config.env(env_name), config.build)))
+        results = [await f for f in futures]
+    else:
+        empty_line = run_build
+        results = []
+        for env_name in config.run_environments:
+            if empty_line:
+                LOGGER.info('')
+            else:
+                empty_line = True
+            results.append(await run_env(config.env(env_name), config.build))
     return 1 if any(r for r in results) else 0

@@ -65,3 +65,7 @@ class ToxConfig(CoreToxConfig):
     @property
     def action(self) -> str:
         return cast(str, getattr(self._options, 'action'))
+
+    @property
+    def run_parallel(self) -> bool:
+        return cast(bool, getattr(self._options, 'run_parallel'))
