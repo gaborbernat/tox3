@@ -1,13 +1,15 @@
+import logging
 import os
 import pickle
 import re
 import sys
+from functools import partial
 from pathlib import Path
 from typing import MutableMapping, Optional
 
 from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from tox3.interpreters import Python, find_python
-from tox3.util import CmdLineBufferPrinter, Loggers, rm_dir, run
+from tox3.util import CmdLineBufferPrinter, Loggers, print_to_sdtout, rm_dir, run
 
 
 def strip_env_vars(bin_path: Path) -> MutableMapping[str, str]:
@@ -35,7 +37,10 @@ class VEnv:
             if params.use_develop:
                 cmd.append('-e')
             cmd.extend(params.packages)
-            await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True, logger=self.logger)
+            await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True, logger=self.logger,
+                      exit_on_fail=True,
+                      stdout=partial(print_to_sdtout, level=logging.DEBUG),
+                      stderr=partial(print_to_sdtout, level=logging.ERROR))
 
 
 async def setup(params: VEnvCreateParam) -> VEnv:
