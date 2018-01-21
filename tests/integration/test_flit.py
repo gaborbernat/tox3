@@ -27,7 +27,7 @@ async def test_flit_build_and_run(project):
                         "python -c 'from py_mod import main; print(main())'"]
 
             [tool.tox3.env._build]
-            basepython="python"
+            python="python"
 
         ''',
         Path('py_mod') / '__init__.py': f'''

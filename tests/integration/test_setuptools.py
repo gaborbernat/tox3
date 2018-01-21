@@ -19,7 +19,7 @@ async def test_setuptools_build(project):
             envlist = ['py']
             
             [tool.tox3.env._build]
-            basepython="python"
+            python="python"
             
         ''',
         'setup.py': f'''

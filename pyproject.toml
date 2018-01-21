@@ -16,9 +16,6 @@ extras = ['testing']
 tear_down_commands = ["python setup.py clean --all",
                       """python -c 'import shutil; shutil.rmtree(\"dist\", True); shutil.rmtree(\".eggs\", True)'"""]
 
-[tool.tox3.env.py]
-basepython = 'python'
-
 [tool.tox3.env.codecov]
 change_dir = '<root_dir>'
 skip_install = true

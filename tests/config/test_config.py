@@ -16,7 +16,7 @@ build-backend = 'setuptools.build_meta'
   envlist = ['py36']
 
 [tool.tox3.env]
-  basepython = 'python3.6'
+  python = 'python3.6'
 
 [tool.tox3.env.py36]
   deps = ["pytest"]

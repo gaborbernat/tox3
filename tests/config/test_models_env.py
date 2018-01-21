@@ -23,10 +23,10 @@ async def test_recreate(conf):
 
 
 @pytest.mark.asyncio
-async def test_base_python_custom(conf):
+async def test_python_custom(conf):
     env = conf(f'''
     [tool.tox3.env]
-    basepython="magic"
+    python="magic"
     [tool.tox3.env.extra]
     ''')
     conf: ToxConfig = await env.conf()
@@ -43,7 +43,7 @@ async def test_base_python_custom(conf):
     ('py', 'python'),
 ])
 @pytest.mark.asyncio
-async def test_base_python_implicit(conf, env_name, python):
+async def test_python_implicit(conf, env_name, python):
     env = conf(f'''
     [tool.tox3.env.{env_name}]
     ''')

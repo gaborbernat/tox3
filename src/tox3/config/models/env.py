@@ -33,7 +33,7 @@ class EnvConfig(CoreToxConfig):
 
     @property
     def python(self) -> str:
-        key = self._file.get('basepython')
+        key = self._file.get('python')
         if key is None:
             return self.resolve_python_key(self.name)
         return cast(str, key)
