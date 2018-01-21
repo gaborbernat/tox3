@@ -8,6 +8,11 @@ import py  # type: ignore
 
 from .util import CmdLineBufferPrinter, Loggers, run
 
+
+class CouldNotFindInterpreter(ValueError):
+    pass
+
+
 VersionInfo = Tuple[int, int, int, str]
 
 
@@ -73,7 +78,7 @@ def get_interpreter(name: str, logger: Loggers) -> Path:
         return binary
 
     if binary is None:
-        raise RuntimeError('could not find {}, sys path {!r}'.format(name, os.environ.get('PATH')))
+        raise CouldNotFindInterpreter('could not find {}, sys path {!r}'.format(name, os.environ.get('PATH')))
     return Path(binary)
 
 

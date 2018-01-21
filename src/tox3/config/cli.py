@@ -65,7 +65,6 @@ def build_parser() -> argparse.ArgumentParser:
                         default='run')
     parser.add_argument('-p', '--parallel', dest='run_parallel', action="store_true",
                         help='run tox environments in parallel')
-
     return cast(argparse.ArgumentParser, parser)
 
 

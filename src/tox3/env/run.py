@@ -9,11 +9,12 @@ from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 from tox3.config import BuildEnvConfig, RunEnvConfig
 from tox3.config.models.venv import VEnvCreateParam
 from tox3.env.util import EnvLogging, change_dir, install_params
+from tox3.interpreters import CouldNotFindInterpreter
 from tox3.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
 from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
-async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
+async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig, skip_missing_interpreter: bool) -> int:
     start = datetime.datetime.now()
     logger = EnvLogging(logging.getLogger(__name__), {'env': config.envname})
     result = 0
@@ -38,6 +39,16 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig) -> int:
                                    exit_on_fail=False)
                 if result:
                     break
+        return result
+    except BaseException as e:
+        if skip_missing_interpreter and isinstance(e, CouldNotFindInterpreter):
+            result = 0
+        else:
+            logger.error('%s %s', type(e).__name__, e)
+            if isinstance(e, SystemExit):
+                result = e.code
+            else:
+                result = 1
         return result
     finally:
         logger.info('done in %s with %s', human_timedelta(datetime.datetime.now() - start), result)

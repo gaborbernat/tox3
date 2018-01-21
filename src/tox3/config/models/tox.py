@@ -69,3 +69,7 @@ class ToxConfig(CoreToxConfig):
     @property
     def run_parallel(self) -> bool:
         return cast(bool, getattr(self._options, 'run_parallel'))
+
+    @property
+    def skip_missing_interpreters(self) -> bool:
+        return cast(bool, self._file.get('skip_missing_interpreters', False))

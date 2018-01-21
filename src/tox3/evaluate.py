@@ -3,7 +3,7 @@ import datetime
 import logging
 import sys
 from itertools import chain
-from typing import List, Sequence
+from typing import Callable, List, Sequence, Sized
 
 import colorlog  # type: ignore
 
@@ -54,7 +54,6 @@ def main(argv: Sequence[str]) -> int:
     try:
         asyncio.set_event_loop(loop)
         result = loop.run_until_complete(run(argv))
-        LOGGER.debug('done with %s', result)
         return result
     except SystemExit as exc:
         return exc.code
@@ -91,16 +90,21 @@ async def run(argv: Sequence[str]) -> int:
 
 
 async def list_envs(config: ToxConfig) -> int:
-    width = max(len(e) for e in chain(config.default_run_environments,
-                                      config.extra_defined_environments,
-                                      config.run_defined_environments))
+    def max_len(getter: Callable[[str], Sized]) -> int:
+        return max(len(getter(e)) for e in chain(config.default_run_environments,
+                                                 config.extra_defined_environments,
+                                                 config.run_defined_environments))
+
+    width = max_len(lambda e: e)
+    python_width = max_len(lambda e: config.env(e).python)
 
     def print_envs(environments: List[str], type_info: str) -> None:
         if environments:
             LOGGER.info(f'{type_info}:')
         for env in environments:
             env_str = env.ljust(width)
-            LOGGER.info(f'{env_str} -> {config.env(env).description}')
+            python_str = config.env(env).python.ljust(python_width)
+            LOGGER.info(f'{env_str} [{python_str}] -> {config.env(env).description}')
 
     print_envs(config.default_run_environments, 'default environments')
     print_envs(config.extra_defined_environments, 'extra defined environments')
@@ -117,7 +121,8 @@ async def run_tox_envs(config: ToxConfig) -> int:
         futures = []
         loop = asyncio.get_event_loop()
         for env_name in config.run_environments:
-            futures.append(loop.create_task(run_env(config.env(env_name), config.build)))
+            futures.append(loop.create_task(run_env(config.env(env_name), config.build,
+                                                    config.skip_missing_interpreters)))
         results = [await f for f in futures]
     else:
         empty_line = run_build
@@ -127,5 +132,6 @@ async def run_tox_envs(config: ToxConfig) -> int:
                 LOGGER.info('')
             else:
                 empty_line = True
-            results.append(await run_env(config.env(env_name), config.build))
-    return 1 if any(r for r in results) else 0
+            results.append(await run_env(config.env(env_name), config.build, config.skip_missing_interpreters))
+    fails = [r for r in results if r]
+    return (fails[0] if len(fails) == 1 else 1) if fails else 0
