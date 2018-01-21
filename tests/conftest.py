@@ -1,13 +1,14 @@
 import asyncio
 import os
-from pathlib import Path
 import shutil
 import sys
 import textwrap
+from pathlib import Path
 from typing import Callable, Dict, Optional, Union
 
 import pytest
 
+from tox3.config.cli import OS_ENV_VARS
 from tox3.evaluate import ToxConfig, get_event_loop, load_config, run
 
 
@@ -69,13 +70,15 @@ def project_fixture(tmpdir: Path, monkeypatch):
     def project_factory(files: Dict[Union[str, Path], str]):
         for file, content in files.items():
             file_path: Path = Path(tmpdir) / (Path(file) if isinstance(file, str) else file)
-            dir: Path = file_path.parent
-            if not dir.exists():
-                os.makedirs(str(dir))
+            folder: Path = file_path.parent
+            if not folder.exists():
+                os.makedirs(str(folder))
             with open(file_path, 'wt') as file_handler:
                 file_handler.write(textwrap.dedent(content))
         monkeypatch.chdir(tmpdir)
         nonlocal _project
+        for var in OS_ENV_VARS:
+            monkeypatch.delenv(var, raising=False)  # yeah don't use parents config
         _project = Project(monkeypatch, tmpdir)
         return _project
 

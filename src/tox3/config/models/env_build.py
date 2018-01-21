@@ -1,6 +1,8 @@
+import argparse
 from pathlib import Path
 from typing import List, Optional
 
+from tox3.config.project import BuildSystem, ConfDict
 from .env import EnvConfig
 
 
@@ -8,6 +10,15 @@ class BuildEnvConfig(EnvConfig):
     NAME: str = '_build'
     _built_package: Optional[Path] = None
     _for_build_requires: List[str] = []
+
+    def __init__(self,
+                 _cli: argparse.Namespace,
+                 config_dict: ConfDict,
+                 work_dir: Path,
+                 name: str,
+                 build_system: BuildSystem) -> None:
+        super().__init__(_cli, config_dict, work_dir, name)
+        self._build_system: BuildSystem = build_system
 
     @property
     def built_package(self) -> Optional[Path]:
@@ -27,7 +38,7 @@ class BuildEnvConfig(EnvConfig):
 
     @property
     def build_wheel(self) -> bool:
-        return self._file.get('build_wheel', True)
+        return self._config_dict.get('build_wheel', True)
 
     @property
     def build_type(self) -> str:
@@ -58,8 +69,8 @@ class BuildEnvConfig(EnvConfig):
 
     @property
     def skip(self) -> bool:
-        return self._file.get('skip', False)
+        return self._config_dict.get('skip', False)
 
     @property
     def teardown_commands(self) -> List[List[str]]:
-        return self._extract_command(self._file.get('tear_down_commands', []))
+        return self._extract_command(self._config_dict.get('tear_down_commands', []))

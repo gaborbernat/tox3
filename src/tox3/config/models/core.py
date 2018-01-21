@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Optional, cast
 
-from ..project import BuildSystem, FileConf
+from ..project import ConfDict
 from ..util import Substitute
 
 
@@ -56,18 +56,10 @@ class CoreToxConfig(Substitute):
 
     def __init__(self,
                  options: argparse.Namespace,
-                 build_system: BuildSystem,
-                 file: FileConf,
-                 work_dir: Path) -> None:
-        self._options: argparse.Namespace = options
-        self._file: FileConf = file
-        self._build_system: BuildSystem = build_system
-        self._work_dir = work_dir
+                 file: ConfDict) -> None:
+        self._cli: argparse.Namespace = options
+        self._config_dict: ConfDict = file
 
     @property
     def root_dir(self) -> Path:
-        return cast(Path, self._options.__getattribute__('root_dir'))
-
-    @property
-    def work_dir(self) -> Path:
-        return self._work_dir
+        return cast(Path, self._cli.__getattribute__('root_dir'))

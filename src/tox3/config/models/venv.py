@@ -6,14 +6,10 @@ from tox3.util import Loggers
 
 class VEnvCreateParam(NamedTuple):
     recreate: bool
-    dest_dir: Path
+    dir: Path
     name: str
     python: str
     logger: Loggers
-
-    @property
-    def dir(self) -> Path:
-        return self.dest_dir / self.name
 
     @property
     def cache(self) -> Path:

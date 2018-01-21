@@ -10,24 +10,23 @@ from pathlib import Path
 from typing import IO, Sequence, Union
 
 from tox3.config.models.core import root_dir
-
 from .cli import parse
 from .models.env_build import BuildEnvConfig
 from .models.env_run import RunEnvConfig
 from .models.tox import ToxConfig
-from .project import BuildSystem, FileConf, from_toml
+from .project import BuildSystem, ConfDict, from_toml
 from .util import Substitute
 
 
 async def load(argv: Sequence[str]) -> ToxConfig:
     options = await parse(argv)
-    config_file: Union[Path, IO[str]] = options.__getattribute__('config')
-    build_system, file = await from_toml(config_file)
+    config_object: Union[Path, IO[str]] = getattr(options, 'config')
+    build_system, conf_dict, conf_path = await from_toml(config_object)
 
-    work_dir_conf = Path(file['work_dir']) if 'work_dir' in file else None
+    work_dir_conf = Path(conf_dict['work_dir']) if 'work_dir' in conf_dict else None
     work_dir = root_dir(options, work_dir_conf)
 
-    return ToxConfig(options, build_system, file, work_dir)
+    return ToxConfig(options, build_system, conf_dict, conf_path, work_dir)
 
 
 __all__ = ('ToxConfig', 'RunEnvConfig', 'BuildEnvConfig', 'load')

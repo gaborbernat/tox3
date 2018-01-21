@@ -10,7 +10,10 @@ import configargparse  # type: ignore
 import tox3
 
 CONFIG_FILE_NAME = 'pyproject.toml'
+
 TOX_ENV = 'TOX_ENV'
+TOX_CONFIG = 'TOX_CONFIG'
+OS_ENV_VARS = [TOX_ENV, TOX_CONFIG]
 
 
 def level_names() -> List[str]:
@@ -55,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
     parser.add_argument('-c', '--config', type=argparse.FileType('r'), dest='config',
-                        default=None, metavar='file', env_var='TOX_CONFIG')
+                        default=None, metavar='file', env_var=TOX_CONFIG)
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
