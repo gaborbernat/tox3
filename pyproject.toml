@@ -35,6 +35,7 @@ commands = ["python -m mypy src --strict"]
 
 [tool.tox3.env.doc]
 change_dir = '<root_dir>'
+pass_env =["http_proxy", "https_proxy", "no_proxy", "SSL_CERT_FILE"]
 description = "generate the project documenntation into <work_dir>/docs_out and check links are valid"
 extras = ['doc']
 commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html <posargs>',

@@ -6,11 +6,9 @@ __pycache__
 build
 dist
 *.egg-info
-.tox3
-.cache
-
-.idea
 .eggs/
 
-.coverage
+.cache
 .mypy_cache
+
+.idea
