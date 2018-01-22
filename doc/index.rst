@@ -63,3 +63,9 @@ your own dog food (``PYTHONPATH= python -m tox3 -vvvv`` runs all tests and check
 
 .. _virtualenv: https://pypi.python.org/pypi/virtualenv
 .. _tox3: https://github.com/gaborbernat/tox3
+
+.. toctree::
+   :maxdepth: 2
+
+   config
+   cli

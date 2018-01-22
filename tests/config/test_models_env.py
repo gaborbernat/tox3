@@ -11,15 +11,15 @@ async def test_recreate(conf):
 
     conf: ToxConfig = await env.conf()
     assert conf.build.recreate is False
-    assert conf.env('extra').recreate is False
+    assert conf._env('extra').recreate is False
 
     conf: ToxConfig = await env.conf('-r')
     assert conf.build.recreate is True
-    assert conf.env('extra').recreate is True
+    assert conf._env('extra').recreate is True
 
     conf: ToxConfig = await env.conf('--recreate')
     assert conf.build.recreate is True
-    assert conf.env('extra').recreate is True
+    assert conf._env('extra').recreate is True
 
 
 @pytest.mark.asyncio
@@ -31,7 +31,7 @@ async def test_python_custom(conf):
     ''')
     conf: ToxConfig = await env.conf()
     assert conf.build.python == 'magic'
-    assert conf.env('extra').python == 'magic'
+    assert conf._env('extra').python == 'magic'
 
 
 @pytest.mark.parametrize('env_name, python', [
@@ -49,4 +49,4 @@ async def test_python_implicit(conf, env_name, python):
     ''')
     conf: ToxConfig = await env.conf()
     assert conf.build.python == 'python'
-    assert conf.env(env_name).python == python
+    assert conf._env(env_name).python == python

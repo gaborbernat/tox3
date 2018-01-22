@@ -2,13 +2,13 @@ import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
-from .core import CoreToxConfig
+from .core import CommonToxConfig
 from .env_build import BuildEnvConfig
 from .env_run import RunEnvConfig
 from ..project import BuildSystem, ConfDict
 
 
-class ToxConfig(CoreToxConfig):
+class ToxConfig(CommonToxConfig):
 
     def __init__(self,
                  options: argparse.Namespace,
@@ -16,7 +16,7 @@ class ToxConfig(CoreToxConfig):
                  config_dict: ConfDict,
                  config_path: Optional[Path],
                  work_dir: Path) -> None:
-        self.work_dir: Path = work_dir
+        self._work_dir: Path = work_dir
         self.config_path: Optional[Path] = config_path
         self._build_system: BuildSystem = build_system
         super().__init__(options, config_dict)
@@ -61,17 +61,33 @@ class ToxConfig(CoreToxConfig):
                 run_defined.append(env)
         return run_defined
 
-    def env(self, env_name: str) -> RunEnvConfig:
+    def _env(self, env_name: str) -> RunEnvConfig:
         return self._envs[env_name]
 
     @property
+    def work_dir(self) -> Path:
+        """working directory of the project
+
+        :note: default value: create a unique key  into the users home folder `.tox3` folder (first 12 chars of
+               :meth:`tox3.config.ToxConfig.root_dir` basename, plus hash of the absolute root dir path,
+               salted to not conflict with already existing)"""
+        return self._work_dir
+
+    @property
     def action(self) -> str:
+        """the action to be executed, one of :data:`tox3.config.cli.ACTIONS`
+
+        :note: CLI only"""
         return cast(str, getattr(self._cli, 'action'))
 
     @property
     def run_parallel(self) -> bool:
+        """run tox environments in parallel once building the project finishes
+
+        :note: CLI only"""
         return cast(bool, getattr(self._cli, 'run_parallel'))
 
     @property
     def skip_missing_interpreters(self) -> bool:
+        """skip tox environments for whom we fail to find a matching Python interpreter"""
         return cast(bool, self._config_dict.get('skip_missing_interpreters', False))

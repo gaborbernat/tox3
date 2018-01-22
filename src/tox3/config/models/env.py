@@ -5,11 +5,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, cast
 
 from tox3.venv import VEnv
-from .core import CoreToxConfig
+from .core import CommonToxConfig
 from ..project import ConfDict
 
 
-class EnvConfig(CoreToxConfig):
+class EnvConfig(CommonToxConfig):
 
     def __init__(self,
                  _options: argparse.Namespace,
@@ -54,7 +54,7 @@ class EnvConfig(CoreToxConfig):
 
     @property
     def recreate(self) -> bool:
-        return cast(bool, self._cli.__getattribute__('recreate'))
+        return cast(bool, getattr(self._cli, 'recreate', False))
 
     @property
     def envsitepackagesdir(self) -> Path:

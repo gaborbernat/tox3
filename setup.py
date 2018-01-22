@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name='tox3',
     description='virtualenv-based automation of test activities',
-    url='https://tox.readthedocs.org/',
+    url='https://tox3.readthedocs.org/',
     use_scm_version=True,
     include_package_data=True,
     license='http://opensource.org/licenses/MIT',
@@ -23,7 +23,15 @@ setup(
                                 'pytest-asyncio >= 0.8.0, <1',
                                 'pytest-xdist',
                                 'pytest-cov'],
-                    'doc': ['sphinx >= 1.6.0']},
+                    'doc': ['sphinx >= 1.6.6',
+                            'sphinx-argparse >= 0.2.1',
+                            'sphinx_py3doc_enhanced_theme',
+                            'sphinx-autodoc-typehints >= 1.2.2']},
+    entry_points={
+        'console_scripts': [
+            'tox3=tox3.evaluate:main',
+        ],
+    },
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Developers',
                  'License :: OSI Approved :: MIT License',

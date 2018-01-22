@@ -42,17 +42,18 @@ def _project_sys_dir(root_dir: Path) -> Path:
             return project_id_folder
 
 
-def root_dir(options: argparse.Namespace, work_dir: Optional[Path]) -> Path:
+def root_dir(cli: argparse.Namespace, work_dir: Optional[Path]) -> Path:
     if work_dir is not None:
         if not work_dir.is_absolute():
             work_dir = work_dir.absolute()
         if not work_dir.exists():
             os.makedirs(str(work_dir))
         return work_dir
-    return _project_sys_dir(cast(Path, options.__getattribute__('root_dir')))
+    return _project_sys_dir(cast(Path, getattr(cli, 'root_dir')))
 
 
-class CoreToxConfig(Substitute):
+class CommonToxConfig(Substitute):
+    """configuration elements present in all configuration objects"""
 
     def __init__(self,
                  options: argparse.Namespace,
@@ -62,4 +63,8 @@ class CoreToxConfig(Substitute):
 
     @property
     def root_dir(self) -> Path:
-        return cast(Path, self._cli.__getattribute__('root_dir'))
+        """the root directory of the project
+
+        :note: read only
+        """
+        return cast(Path, getattr(self._cli, 'root_dir'))

@@ -37,7 +37,7 @@ commands = ["python -m mypy src --strict"]
 change_dir = '<root_dir>'
 description = "generate the project documenntation into <work_dir>/docs_out and check links are valid"
 extras = ['doc']
-commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html',
+commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html <posargs>',
             'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
 
 [tool.tox3.env.dev]

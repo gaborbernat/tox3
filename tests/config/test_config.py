@@ -1,12 +1,10 @@
 import pytest
 
 from tox3.config import ToxConfig
-from tox3.config.cli import TOX_ENV
 
 
 @pytest.mark.asyncio
-async def test_pytest(conf, monkeypatch):
-    monkeypatch.delenv(TOX_ENV, raising=False)
+async def test_pytest(conf):
     env = conf('''
 [build-system]
 requires = ['setuptools >= 38.2.4']
@@ -33,11 +31,11 @@ build-backend = 'setuptools.build_meta'
     assert conf.default_run_environments == ['py36']
     assert conf.environments == ['py36', 'dev']
 
-    py36 = conf.env('py36')
+    py36 = conf._env('py36')
     assert py36.description == 'run the unit tests with pytest'
     assert py36.commands == [['pytest', 'tests']]
 
-    dev = conf.env('dev')
+    dev = conf._env('dev')
     assert dev.description is None
     assert dev.commands == []
     assert dev.deps == []

@@ -65,7 +65,7 @@ def main(argv: Sequence[str]) -> int:
 
 
 def build_needs_install(config: ToxConfig) -> bool:
-    return any(config.env(name).install_build and not config.env(name).use_develop for name in config.run_environments)
+    return any(config._env(name).install_build and not config._env(name).use_develop for name in config.run_environments)
 
 
 async def run(argv: Sequence[str]) -> int:
@@ -96,15 +96,15 @@ async def list_envs(config: ToxConfig) -> int:
                                                  config.run_defined_environments))
 
     width = max_len(lambda e: e)
-    python_width = max_len(lambda e: config.env(e).python)
+    python_width = max_len(lambda e: config._env(e).python)
 
     def print_envs(environments: List[str], type_info: str) -> None:
         if environments:
             LOGGER.info(f'{type_info}:')
         for env in environments:
             env_str = env.ljust(width)
-            python_str = config.env(env).python.ljust(python_width)
-            LOGGER.info(f'{env_str} [{python_str}] -> {config.env(env).description}')
+            python_str = config._env(env).python.ljust(python_width)
+            LOGGER.info(f'{env_str} [{python_str}] -> {config._env(env).description}')
 
     print_envs(config.default_run_environments, 'default environments')
     print_envs(config.extra_defined_environments, 'extra defined environments')
@@ -121,7 +121,7 @@ async def run_tox_envs(config: ToxConfig) -> int:
         futures = []
         loop = asyncio.get_event_loop()
         for env_name in config.run_environments:
-            futures.append(loop.create_task(run_env(config.env(env_name), config.build,
+            futures.append(loop.create_task(run_env(config._env(env_name), config.build,
                                                     config.skip_missing_interpreters)))
         results = [await f for f in futures]
     else:
@@ -132,6 +132,6 @@ async def run_tox_envs(config: ToxConfig) -> int:
                 LOGGER.info('')
             else:
                 empty_line = True
-            results.append(await run_env(config.env(env_name), config.build, config.skip_missing_interpreters))
+            results.append(await run_env(config._env(env_name), config.build, config.skip_missing_interpreters))
     fails = [r for r in results if r]
     return (fails[0] if len(fails) == 1 else 1) if fails else 0

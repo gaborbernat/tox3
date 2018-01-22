@@ -15,6 +15,9 @@ TOX_ENV = 'TOX_ENV'
 TOX_CONFIG = 'TOX_CONFIG'
 OS_ENV_VARS = [TOX_ENV, TOX_CONFIG]
 
+# actions that can be performed upon invoking tox
+ACTIONS = ['run', 'list', 'list-bare', 'list-default-bare']  # actions that can be performed upon invoking tox
+
 
 def level_names() -> List[str]:
     return [logging.getLevelName(x) for x in range(1, 101) if not logging.getLevelName(x).startswith('Level')]
@@ -64,7 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
                         help='run only this run environments', nargs="+", type=str, env_var=TOX_ENV)
     parser.add_argument('args', nargs='*', help='additional arguments passed to positional substitutions')
-    parser.add_argument('-a', '--action', choices=['run', 'list', 'list-bare', 'list-default-bare'],
+    parser.add_argument('-a', '--action', choices=ACTIONS,
                         default='run')
     parser.add_argument('-p', '--parallel', dest='run_parallel', action="store_true",
                         help='run tox environments in parallel')
