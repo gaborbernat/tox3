@@ -1,8 +1,14 @@
+import inspect
 import os
 from datetime import date
 
 import sphinx_py3doc_enhanced_theme
+from docutils import nodes
+from docutils.parsers.rst import Directive
+from docutils.statemachine import ViewList
 from pkg_resources import get_distribution
+from sphinx.util import nested_parse_with_titles
+from sphinx.util.docstrings import prepare_docstring
 
 release = get_distribution('tox3').version
 
@@ -47,5 +53,58 @@ def process_sig(app, what, name, obj, options, signature, return_annotation):
     return '', return_annotation
 
 
+class TableAutoClassDoc(Directive):
+    has_content = True
+    required_arguments = 1
+
+    def run(self):
+        of_class = self.arguments[0].split('.')
+        class_type = getattr(__import__('.'.join(of_class[:-1]), fromlist=[of_class[-1]]), of_class[-1])
+
+        def predicate(a):
+            return isinstance(a, property)
+
+        class_members = inspect.getmembers(class_type, predicate=predicate)
+        return_types = [inspect.signature(p.fget).return_annotation for _, p in class_members]
+        docs = [inspect.getdoc(p) or '' for _, p in class_members]
+
+        table = nodes.table()
+        t_group = nodes.tgroup(cols=4)
+
+        t_group += nodes.colspec(colwidth=1)
+        t_group += nodes.colspec(colwidth=1)
+        t_group += nodes.colspec(colwidth=2)
+        t_group += nodes.colspec(colwidth=10)
+
+        # header
+        t_group += nodes.thead('', nodes.row('', *[nodes.entry('', nodes.line(text=c)) for c in
+                                                   ["property", "location", "type", "description"]]))
+
+        # rows
+        t_body = nodes.tbody()
+        for (name, _), return_type, doc in zip(class_members, return_types, docs):
+            doc_l = doc.split('\n')
+            location = next((i for i in doc_l if i.startswith(':note:')), '')[len(':note:'):]
+            doc_stripped = '\n'.join(i for i in doc_l if not i.startswith(':note:'))
+            
+            vl = ViewList(prepare_docstring(doc_stripped))
+            node = nodes.container()
+            nested_parse_with_titles(self.state, vl, node)
+
+            t_body += nodes.row(name,
+                                nodes.entry('', nodes.literal(text=name)),
+                                nodes.entry('', nodes.literal(text=location)),
+                                nodes.entry('', nodes.literal(text=return_type)),
+                                nodes.entry('', node))
+
+        t_group += t_body
+        table += t_group
+
+        section = nodes.section(ids=[self.arguments[0]])
+        section += nodes.title(self.arguments[0], self.arguments[0])
+
+        return [section, table]
+
+
 def setup(app):
-    app.connect("autodoc-process-signature", process_sig)
+    app.add_directive('auto_doc_class_table', TableAutoClassDoc)

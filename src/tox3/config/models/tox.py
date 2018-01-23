@@ -68,9 +68,10 @@ class ToxConfig(CommonToxConfig):
     def work_dir(self) -> Path:
         """working directory of the project
 
-        :note: default value: create a unique key  into the users home folder `.tox3` folder (first 12 chars of
-               :meth:`tox3.config.ToxConfig.root_dir` basename, plus hash of the absolute root dir path,
-               salted to not conflict with already existing)"""
+        default value: create a unique key  into the users home folder `.tox3` folder (first 12 chars of
+        :meth:`tox3.config.ToxConfig.root_dir` basename, plus hash of the absolute root dir path, salted to not
+        conflict with already existing)
+        """
         return self._work_dir
 
     @property
