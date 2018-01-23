@@ -9,6 +9,7 @@ from docutils.statemachine import ViewList
 from pkg_resources import get_distribution
 from sphinx.util import nested_parse_with_titles
 from sphinx.util.docstrings import prepare_docstring
+from sphinx_autodoc_typehints import format_annotation
 
 release = get_distribution('tox3').version
 
@@ -73,12 +74,12 @@ class TableAutoClassDoc(Directive):
 
         t_group += nodes.colspec(colwidth=1)
         t_group += nodes.colspec(colwidth=1)
-        t_group += nodes.colspec(colwidth=2)
+        t_group += nodes.colspec(colwidth=1)
         t_group += nodes.colspec(colwidth=10)
 
         # header
         t_group += nodes.thead('', nodes.row('', *[nodes.entry('', nodes.line(text=c)) for c in
-                                                   ["property", "location", "type", "description"]]))
+                                                   ["field", "type", "note", "description"]]))
 
         # rows
         t_body = nodes.tbody()
@@ -86,16 +87,23 @@ class TableAutoClassDoc(Directive):
             doc_l = doc.split('\n')
             location = next((i for i in doc_l if i.startswith(':note:')), '')[len(':note:'):]
             doc_stripped = '\n'.join(i for i in doc_l if not i.startswith(':note:'))
-            
-            vl = ViewList(prepare_docstring(doc_stripped))
-            node = nodes.container()
-            nested_parse_with_titles(self.state, vl, node)
 
+            doc_stripped_view = ViewList(prepare_docstring(doc_stripped))
+            doc_stripped_node = nodes.container()
+            nested_parse_with_titles(self.state, doc_stripped_view, doc_stripped_node)
+
+            return_type_view = ViewList(prepare_docstring(format_annotation(return_type)))
+            return_type_node = nodes.container()
+            nested_parse_with_titles(self.state, return_type_view, return_type_node)
+
+            name_node = nodes.reference('',
+                                        nodes.Text(name, name),
+                                        refid='{}.{}'.format(self.arguments[0], name))
             t_body += nodes.row(name,
                                 nodes.entry('', nodes.literal(text=name)),
+                                nodes.entry('', return_type_node),
                                 nodes.entry('', nodes.literal(text=location)),
-                                nodes.entry('', nodes.literal(text=return_type)),
-                                nodes.entry('', node))
+                                nodes.entry('', doc_stripped_node))
 
         t_group += t_body
         table += t_group
