@@ -51,7 +51,7 @@ async def parse(argv: Sequence[str]) -> argparse.Namespace:
 class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
     def __init__(self, prog: str) -> None:
-        super().__init__(prog, max_help_position=35, width=200)
+        super().__init__(prog, max_help_position=35, width=255)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -61,13 +61,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")
     parser.add_argument('-c', '--config', type=argparse.FileType('r'), dest='config',
-                        default=None, metavar='file', env_var=TOX_CONFIG)
+                        default=None, metavar='file', env_var=TOX_CONFIG,
+                        help='the pyproject.toml config file to use (determines the root directory)')
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
                         help="force recreation of virtual environments")
     parser.add_argument('-e', '--envs', dest='environments', metavar='e',
                         help='run only this run environments', nargs="+", type=str, env_var=TOX_ENV)
-    parser.add_argument('args', nargs='*', help='additional arguments passed to positional substitutions')
-    parser.add_argument('-a', '--action', choices=ACTIONS,
+    parser.add_argument('args', nargs='*', help='additional arguments passed to commands as positional substitution')
+    parser.add_argument('-a', '--action', choices=ACTIONS, help='action to perform once configuration loaded',
                         default='run')
     parser.add_argument('-p', '--parallel', dest='run_parallel', action="store_true",
                         help='run tox environments in parallel')
@@ -75,14 +76,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def pre_process_flags(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument('--logging', default='%(message)s',
-                        help='tools logging format', dest='logging')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-v', '--verbosity', type=str, dest='verbose',
-                       help='control log level towards stderr', choices=level_names(),
+                       help='stderr output log level', choices=level_names(),
                        default=logging.getLevelName(logging.INFO))
     group.add_argument('-q', '--quiet', action='store_true', dest='quiet', default=False,
                        help='do not print log messages')
+    parser.add_argument('--logging', default='%(message)s',
+                        help='logging format, '
+                             'see https://docs.python.org/3/library/logging.html#logrecord-attributes',
+                        dest='logging')
 
 
 def get_logging(argv: Sequence[str]) -> Tuple[str, bool, str]:

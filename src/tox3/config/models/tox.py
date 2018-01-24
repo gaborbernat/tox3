@@ -76,7 +76,7 @@ class ToxConfig(CommonToxConfig):
 
     @property
     def action(self) -> str:
-        """the action to be executed, one of :data:`tox3.config.cli.ACTIONS`
+        """the action to be executed, one of :literal_data:`tox3.config.cli.ACTIONS`
 
         :note: CLI only"""
         return cast(str, getattr(self._cli, 'action'))
