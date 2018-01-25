@@ -30,6 +30,6 @@ tox is a generic virtualenv management and test command line tool you can use fo
 
 For more information and the repository please see:
 
-- home and docs: https://tox.readthedocs.org
+- home and docs: https://tox3.readthedocs.org
 
-- repository: https://github.com/tox-dev/tox
+- repository: https://github.com/gaborbernat/tox3
