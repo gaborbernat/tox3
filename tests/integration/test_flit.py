@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.network
@@ -21,12 +21,12 @@ async def test_flit_build_and_run(project):
             author-email = "happy@harry.com"
             home-page = "https://github.com/happy-harry/is"
 
-            [tool.tox3]
+            [tool.toxn]
             envlist = ['py']
             commands = ["pip list --format=columns",
                         "python -c 'from py_mod import main; print(main())'"]
 
-            [tool.tox3.env._build]
+            [tool.toxn.env._build]
             python="python"
 
         ''',

@@ -1,12 +1,12 @@
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.asyncio
 async def test_posargs_extraction(conf):
     env = conf('''
-[tool.tox3.env.py36]
+[tool.toxn.env.py36]
   commands = ["pytest tests <posargs>"]
 ''')
 

@@ -14,7 +14,7 @@ from sphinx.util.docstrings import prepare_docstring
 from sphinx_autodoc_typehints import format_annotation
 from sphinxarg.parser import parse_parser
 
-release = get_distribution('tox3').version
+release = get_distribution('toxn').version
 
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.extlinks',
@@ -23,7 +23,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxarg.ext',
               'sphinx_autodoc_typehints']
 
-project = u'tox3'
+project = u'toxn'
 version = release
 
 author = 'Bernat Gabor'
@@ -38,7 +38,7 @@ pygments_style = 'sphinx'
 html_theme = "theme"
 html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path(), "."]
 html_theme_options = {
-    'githuburl': 'https://github.com/gaborbernat/tox3',
+    'githuburl': 'https://github.com/gaborbernat/toxn',
     'appendcss': '',
 }
 

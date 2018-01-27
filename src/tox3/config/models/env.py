@@ -4,7 +4,7 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, cast
 
-from tox3.venv import VEnv
+from toxn.venv import VEnv
 from .core import CommonToxConfig
 from ..project import ConfDict
 

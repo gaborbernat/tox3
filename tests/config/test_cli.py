@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from tox3.config import ToxConfig
-from tox3.config.cli import TOX_CONFIG
+from toxn.config import ToxConfig
+from toxn.config.cli import TOX_CONFIG
 
 
 @contextmanager

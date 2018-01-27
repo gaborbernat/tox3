@@ -7,7 +7,7 @@ from typing import IO, List, Sequence, Tuple, Union, cast
 
 import configargparse  # type: ignore
 
-import tox3
+import toxn
 
 CONFIG_FILE_NAME = 'pyproject.toml'
 
@@ -55,8 +55,8 @@ class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = configargparse.ArgParser("tox3", formatter_class=Tox3HelpFormatter,
-                                      epilog=f'{tox3.__version__} from {tox3.__file__}')
+    parser = configargparse.ArgParser("toxn", formatter_class=Tox3HelpFormatter,
+                                      epilog=f'{toxn.__version__} from {toxn.__file__}')
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
                         help="report version information to stdout")

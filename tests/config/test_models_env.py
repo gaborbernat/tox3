@@ -1,12 +1,12 @@
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.asyncio
 async def test_recreate(conf):
     env = conf(f'''
-        [tool.tox3.env.extra]
+        [tool.toxn.env.extra]
         ''')
 
     conf: ToxConfig = await env.conf()
@@ -25,9 +25,9 @@ async def test_recreate(conf):
 @pytest.mark.asyncio
 async def test_python_custom(conf):
     env = conf(f'''
-    [tool.tox3.env]
+    [tool.toxn.env]
     python="magic"
-    [tool.tox3.env.extra]
+    [tool.toxn.env.extra]
     ''')
     conf: ToxConfig = await env.conf()
     assert conf.build.python == 'magic'
@@ -45,7 +45,7 @@ async def test_python_custom(conf):
 @pytest.mark.asyncio
 async def test_python_implicit(conf, env_name, python):
     env = conf(f'''
-    [tool.tox3.env.{env_name}]
+    [tool.toxn.env.{env_name}]
     ''')
     conf: ToxConfig = await env.conf()
     assert conf.build.python == 'python'

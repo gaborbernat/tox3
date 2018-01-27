@@ -3,7 +3,7 @@ Features planned to be added before stable:
 1. Better configuration fine tune:
    a. support env var (with default) substitution
    b. support posargs default value
-   c. ability to refer to other configs (e.g. ``deps = tox3.deps``
+   c. ability to refer to other configs (e.g. ``deps = toxn.deps``
 2. Python should be range specify-able, instead of hard coded against one version:
   ```
   python_requires='>=2.7,!=3.0.*,!=3.1.*'

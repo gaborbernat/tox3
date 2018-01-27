@@ -3,13 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.asyncio
 async def test_work_dir_root_dir(conf):
     env = conf('''
-    [tool.tox3]
+    [tool.toxn]
     work_dir = ".tox"
     envlist = ["<root_dir>", "<work_dir>"]
     

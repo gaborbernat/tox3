@@ -21,17 +21,17 @@ tox is a generic virtualenv_ management and test command line tool you can use f
 * acting as a frontend to Continuous Integration servers, greatly
   reducing boilerplate and merging CI and shell-based testing.
 
-Why tox3 and not tox?
+Why toxn and not tox?
 ---------------------
 One can notice that most content here is written under the name tox, however the 
-projects current name is tox3. Why? tox was started back in 2010, and its code base
+projects current name is toxn. Why? tox was started back in 2010, and its code base
 has evolved over time with the addition of new features. Also the test suits have become
 slower and slower throughout time, and the current maintainers (me included) have had
 difficulties to know which one is needed, which one is optional in an effort to speed it
 up. What's even more troublesome is that adding new features is not as easy, cause one
 always needs to keep in mind backward compatibility.
 
-tox3_ aims to be a rewrite of the original tool, with new requirements, that mostly offers
+toxn_ aims to be a rewrite of the original tool, with new requirements, that mostly offers
 feature parity with tox, but takes into account how Python evolved in the last 8 years.
 Here's a list of new constraints:
 
@@ -58,11 +58,11 @@ New features:
 
 It's not yet production ready, but I would say ready for early adopters. When I can will start
 implementing some missing features, and hopefully in a month or two can get a release candidate
-with the goal to replace tox. ``tox3`` uses ``tox3`` for itself, to follow the mantra of eat
-your own dog food (``PYTHONPATH= python -m tox3 -vvvv`` runs all tests and checks).
+with the goal to replace tox. ``toxn`` uses ``toxn`` for itself, to follow the mantra of eat
+your own dog food (``PYTHONPATH= python -m toxn -vvvv`` runs all tests and checks).
 
 .. _virtualenv: https://pypi.python.org/pypi/virtualenv
-.. _tox3: https://github.com/gaborbernat/tox3
+.. _toxn: https://github.com/gaborbernat/toxn
 
 .. toctree::
    :maxdepth: 2

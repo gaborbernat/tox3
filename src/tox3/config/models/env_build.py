@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 from typing import List, Optional
 
-from tox3.config.project import BuildSystem, ConfDict
+from toxn.config.project import BuildSystem, ConfDict
 from .env import EnvConfig
 
 

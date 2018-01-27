@@ -1,6 +1,6 @@
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.asyncio
@@ -10,17 +10,17 @@ async def test_pytest(conf):
 requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools.build_meta'
 
-[tool.tox3]
+[tool.toxn]
   envlist = ['py36']
 
-[tool.tox3.env]
+[tool.toxn.env]
   python = 'python3.6'
 
-[tool.tox3.env.py36]
+[tool.toxn.env.py36]
   deps = ["pytest"]
   description = 'run the unit tests with pytest'
   commands = ["pytest tests"]
-[tool.tox3.env.dev]
+[tool.toxn.env.dev]
   commands = [""]
 ''')
     conf: ToxConfig = await env.conf()

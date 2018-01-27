@@ -1,9 +1,9 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='tox3',
+    name='toxn',
     description='virtualenv-based automation of test activities',
-    url='https://tox3.readthedocs.org/',
+    url='https://toxn.readthedocs.org/',
     use_scm_version=True,
     include_package_data=True,
     license='http://opensource.org/licenses/MIT',
@@ -29,7 +29,7 @@ setup(
                             'sphinx-autodoc-typehints >= 1.2.2']},
     entry_points={
         'console_scripts': [
-            'tox3=tox3.evaluate:main',
+            'toxn=toxn.evaluate:main',
         ],
     },
     classifiers=['Development Status :: 5 - Production/Stable',

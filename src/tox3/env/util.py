@@ -4,9 +4,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Tuple
 
-from tox3.config.models.env import EnvConfig
-from tox3.config.models.venv import Install
-from tox3.util import Loggers
+from toxn.config.models.env import EnvConfig
+from toxn.config.models.venv import Install
+from toxn.util import Loggers
 
 
 def install_params(batch_name: str, packages: List[str], config: EnvConfig,

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.network
@@ -15,10 +15,10 @@ async def test_setuptools_build(project):
             requires = ['setuptools >= 38.2.4']
             build-backend = 'setuptools.build_meta'
             
-            [tool.tox3]
+            [tool.toxn]
             envlist = ['py']
             
-            [tool.tox3.env._build]
+            [tool.toxn.env._build]
             python="python"
             
         ''',

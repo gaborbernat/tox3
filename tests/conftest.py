@@ -8,8 +8,8 @@ from typing import Callable, Dict, Optional, Union
 
 import pytest
 
-from tox3.config.cli import OS_ENV_VARS
-from tox3.evaluate import ToxConfig, get_event_loop, load_config, run
+from toxn.config.cli import OS_ENV_VARS
+from toxn.evaluate import ToxConfig, get_event_loop, load_config, run
 
 
 def pytest_configure(config):
@@ -48,7 +48,7 @@ class Project:
         return self.conf_obj
 
     async def run(self, *args: str) -> int:
-        from tox3 import evaluate
+        from toxn import evaluate
 
         # noinspection PyShadowingNames
         async def load(args):

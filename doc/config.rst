@@ -1,15 +1,15 @@
 Configuration
 =============
 
-tox3
+toxn
 ----
-.. auto_doc_class_table:: tox3.config.ToxConfig tox3
+.. auto_doc_class_table:: toxn.config.ToxConfig toxn
 
 
-tox3.env._build
+toxn.env._build
 ---------------
-.. auto_doc_class_table:: tox3.config.BuildEnvConfig tox3.env._build
+.. auto_doc_class_table:: toxn.config.BuildEnvConfig toxn.env._build
 
-tox3.env
+toxn.env
 --------
-.. auto_doc_class_table:: tox3.config.RunEnvConfig tox3.env.name
+.. auto_doc_class_table:: toxn.config.RunEnvConfig toxn.env.name

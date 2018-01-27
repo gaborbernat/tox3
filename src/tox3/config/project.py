@@ -38,6 +38,6 @@ async def from_toml(config_object: Union[Path, IO[str]]) -> Tuple[BuildSystem, C
     build_system = BuildSystem(build_requires, build_backend)
 
     conf_dict: ConfDict = dict()
-    if 'tool' in file_conf and 'tox3' in file_conf['tool']:
-        conf_dict = file_conf['tool']['tox3']
+    if 'tool' in file_conf and 'toxn' in file_conf['tool']:
+        conf_dict = file_conf['tool']['toxn']
     return build_system, conf_dict, config_path

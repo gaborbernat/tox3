@@ -68,15 +68,15 @@ class ToxConfig(CommonToxConfig):
     def work_dir(self) -> Path:
         """working directory of the project
 
-        default value: create a unique key  into the users home folder `.tox3` folder (first 12 chars of
-        :meth:`tox3.config.ToxConfig.root_dir` basename, plus hash of the absolute root dir path, salted to not
+        default value: create a unique key  into the users home folder `.toxn` folder (first 12 chars of
+        :meth:`toxn.config.ToxConfig.root_dir` basename, plus hash of the absolute root dir path, salted to not
         conflict with already existing)
         """
         return self._work_dir
 
     @property
     def action(self) -> str:
-        """the action to be executed, one of :literal_data:`tox3.config.cli.ACTIONS`
+        """the action to be executed, one of :literal_data:`toxn.config.cli.ACTIONS`
 
         :note: CLI only"""
         return cast(str, getattr(self._cli, 'action'))

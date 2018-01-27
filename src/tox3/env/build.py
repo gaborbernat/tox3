@@ -5,11 +5,11 @@ import os
 from pathlib import Path
 from typing import List, Optional, cast
 
-from tox3.config import BuildEnvConfig
-from tox3.config.models.venv import VEnvCreateParam
-from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.util import CmdLineBufferPrinter, human_timedelta, list_to_cmd, rm_dir, run
-from tox3.venv import VEnv, setup as setup_venv
+from toxn.config import BuildEnvConfig
+from toxn.config.models.venv import VEnvCreateParam
+from toxn.env.util import EnvLogging, change_dir, install_params
+from toxn.util import CmdLineBufferPrinter, human_timedelta, list_to_cmd, rm_dir, run
+from toxn.venv import VEnv, setup as setup_venv
 
 LOGGER = EnvLogging(logging.getLogger(__name__), {'env': '_build'})
 

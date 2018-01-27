@@ -7,7 +7,7 @@ from typing import Callable, List, Sequence, Sized
 
 import colorlog  # type: ignore
 
-from tox3.util import human_timedelta
+from toxn.util import human_timedelta
 from .config import ToxConfig, load as load_config
 from .config.cli import get_logging
 from .env import create_install_package, run_env

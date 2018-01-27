@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from tox3.config import from_toml
+from toxn.config import from_toml
 
 
 @pytest.mark.asyncio
@@ -13,7 +13,7 @@ async def test_load_from_io():
 requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'
 
-[tool.tox3]
+[tool.toxn]
   envlist = ['py36']
 """)
     build, project, filename = await from_toml(content)
@@ -32,7 +32,7 @@ async def test_load_from_path(tmpdir):
 requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'
 
-[tool.tox3]
+[tool.toxn]
   envlist = ['py36']
 """)
     build, project, config_path = await from_toml(filename)

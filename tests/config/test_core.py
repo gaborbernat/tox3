@@ -1,6 +1,6 @@
 import pytest
 
-from tox3.config import ToxConfig
+from toxn.config import ToxConfig
 
 
 @pytest.mark.asyncio
@@ -15,9 +15,9 @@ async def test_conf_twice_same_work_dir(conf):
 @pytest.mark.asyncio
 async def test_custom_work_dir(conf):
     env = conf(f'''
-    [tool.tox3]
-    work_dir=".tox3"
+    [tool.toxn]
+    work_dir=".toxn"
     ''')
     conf: ToxConfig = await env.conf()
-    assert conf.work_dir == conf.root_dir / '.tox3'
+    assert conf.work_dir == conf.root_dir / '.toxn'
     assert conf.work_dir.exists()

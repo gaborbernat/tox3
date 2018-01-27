@@ -2,6 +2,6 @@ cli
 ===
 
 .. table_cli::
-   :module: tox3.config.cli
+   :module: toxn.config.cli
    :func: build_parser
    :prog: tox

@@ -7,9 +7,9 @@ from functools import partial
 from pathlib import Path
 from typing import MutableMapping, Optional
 
-from tox3.config.models.venv import Install, VEnvCreateParam, VEnvParams
-from tox3.interpreters import Python, find_python
-from tox3.util import CmdLineBufferPrinter, Loggers, print_to_sdtout, rm_dir, run
+from toxn.config.models.venv import Install, VEnvCreateParam, VEnvParams
+from toxn.interpreters import Python, find_python
+from toxn.util import CmdLineBufferPrinter, Loggers, print_to_sdtout, rm_dir, run
 
 
 def strip_env_vars(bin_path: Path) -> MutableMapping[str, str]:

@@ -6,12 +6,12 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 
-from tox3.config import BuildEnvConfig, RunEnvConfig
-from tox3.config.models.venv import VEnvCreateParam
-from tox3.env.util import EnvLogging, change_dir, install_params
-from tox3.interpreters import CouldNotFindInterpreter
-from tox3.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
-from tox3.venv import VEnv, setup as setup_venv, strip_env_vars
+from toxn.config import BuildEnvConfig, RunEnvConfig
+from toxn.config.models.venv import VEnvCreateParam
+from toxn.env.util import EnvLogging, change_dir, install_params
+from toxn.interpreters import CouldNotFindInterpreter
+from toxn.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
+from toxn.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
 async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig, skip_missing_interpreter: bool) -> int:

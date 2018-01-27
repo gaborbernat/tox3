@@ -11,7 +11,7 @@ from ..util import Substitute
 
 
 def _tox_sys_dir() -> Path:
-    return Path(Path.home()) / '.tox3'
+    return Path(Path.home()) / '.toxn'
 
 
 def _project_sys_dir(root_dir: Path) -> Path:

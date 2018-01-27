@@ -25,8 +25,8 @@ install:
 
 script:
   - pip list --format=columns
-  - python -m tox3 -v DEBUG -e $ENV
+  - python -m toxn -v DEBUG -e $ENV
   
 after_success:
   - export CODECOV_ENV="$ENV-$TRAVIS_PYTHON_VERSION"
-  - if [[ $ENV == "py" ]]; then python -m tox3 -v DEBUG -e codecov; fi
+  - if [[ $ENV == "py" ]]; then python -m toxn -v DEBUG -e codecov; fi

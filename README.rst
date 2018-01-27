@@ -1,14 +1,14 @@
-.. image:: https://travis-ci.org/gaborbernat/tox3.svg?branch=master&style=flat-square&label=Travis%20Build
-    :target: https://travis-ci.org/gaborbernat/tox3
-.. image:: https://img.shields.io/appveyor/ci/gaborbernat/tox3/master.svg?style=flat-square&logo=appveyor
-    :target: https://ci.appveyor.com/project/gaborbernat/tox3
-.. image:: https://codecov.io/gh/gaborbernat/tox3/branch/master/graph/badge.svg?style=flat-square
-  :target: https://codecov.io/gh/gaborbernat/tox3
-.. image:: https://readthedocs.org/projects/tox3/badge/?version=latest&style=flat-square&label=Read%20the%20Docs
-  :target: http://tox3.readthedocs.io/en/latest/?badge=latest
+.. image:: https://travis-ci.org/gaborbernat/toxn.svg?branch=master&style=flat-square&label=Travis%20Build
+    :target: https://travis-ci.org/gaborbernat/toxn
+.. image:: https://img.shields.io/appveyor/ci/gaborbernat/toxn/master.svg?style=flat-square&logo=appveyor
+    :target: https://ci.appveyor.com/project/gaborbernat/toxn
+.. image:: https://codecov.io/gh/gaborbernat/toxn/branch/master/graph/badge.svg?style=flat-square
+  :target: https://codecov.io/gh/gaborbernat/toxn
+.. image:: https://readthedocs.org/projects/toxn/badge/?version=latest&style=flat-square&label=Read%20the%20Docs
+  :target: http://toxn.readthedocs.io/en/latest/?badge=latest
   :alt: Documentation Status
 
-tox3 automation project
+toxn automation project
 =======================
 
 **vision: the next generation of tox, still aiming too: standardize testing in Python**
@@ -30,6 +30,6 @@ tox is a generic virtualenv management and test command line tool you can use fo
 
 For more information and the repository please see:
 
-- home and docs: https://tox3.readthedocs.org
+- home and docs: https://toxn.readthedocs.org
 
-- repository: https://github.com/gaborbernat/tox3
+- repository: https://github.com/gaborbernat/toxn
