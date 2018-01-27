@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Type, Union, cast
 
 from toxn.config.project import BuildSystem, ConfDict
 from .env import EnvConfig
@@ -9,7 +9,7 @@ from .env import EnvConfig
 class BuildEnvConfig(EnvConfig):
     NAME: str = '_build'
     _built_package: Optional[Path] = None
-    _for_build_requires: List[str] = []
+    _for_build_requires: Union[Type[ValueError], List[str]] = ValueError
 
     def __init__(self,
                  _cli: argparse.Namespace,
@@ -30,7 +30,9 @@ class BuildEnvConfig(EnvConfig):
 
     @property
     def for_build_requires(self) -> List[str]:
-        return self._for_build_requires
+        if self._for_build_requires == ValueError:
+            raise ValueError('for_build_requires not set')
+        return cast(List[str], self._for_build_requires)
 
     @for_build_requires.setter
     def for_build_requires(self, value: List[str]) -> None:

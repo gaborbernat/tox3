@@ -65,7 +65,13 @@ def main(argv: Sequence[str]) -> int:
 
 
 def build_needs_install(config: ToxConfig) -> bool:
-    return any(config._env(name).install_build and not config._env(name).use_develop for name in config.run_environments)
+    for name in config.run_environments:
+        env = config._env(name)
+        if env.install_build:
+            if env.use_develop and env.install_for_build_requires is False:
+                continue
+            return True
+    return False
 
 
 async def run(argv: Sequence[str]) -> int:

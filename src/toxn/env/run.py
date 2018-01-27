@@ -110,7 +110,6 @@ async def env_setup(build_config: BuildEnvConfig,
         await env.install(install_params(f'build requires ({build_config.build_type})',
                                          build_config.build_requires,
                                          config))
-
     if not build_config.build_wheel or config.install_for_build_requires:
         await env.install(install_params(f'for build requires ({build_config.build_type})',
                                          build_config.for_build_requires,
@@ -120,7 +119,6 @@ async def env_setup(build_config: BuildEnvConfig,
         await env.install(install_params(f'deps',
                                          config.deps,
                                          config))
-
     extras = config.extras
     if build_config.skip is False and config.install_build:
         if config.use_develop:

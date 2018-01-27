@@ -9,7 +9,7 @@ from typing import MutableMapping, Optional
 
 from toxn.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from toxn.interpreters import Python, find_python
-from toxn.util import CmdLineBufferPrinter, Loggers, print_to_sdtout, rm_dir, run
+from toxn.util import CmdLineBufferPrinter, Loggers, list_to_cmd, print_to_sdtout, rm_dir, run
 
 
 def strip_env_vars(bin_path: Path) -> MutableMapping[str, str]:
@@ -37,6 +37,7 @@ class VEnv:
             if params.use_develop:
                 cmd.append('-e')
             cmd.extend(params.packages)
+            self.logger.info('install %s', list_to_cmd(cmd))
             await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True, logger=self.logger,
                       exit_on_fail=True,
                       stdout=partial(print_to_sdtout, level=logging.DEBUG),
