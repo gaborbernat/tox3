@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import List, Optional, Type, Union, cast
 
 from toxn.config.project import BuildSystem, ConfDict
-from .env import EnvConfig
+from .task_base import TaskConfig
 
 
-class BuildEnvConfig(EnvConfig):
-    NAME: str = '_build'
+class BuildTaskConfig(TaskConfig):
+    NAME: str = 'build'
     _built_package: Optional[Path] = None
     _for_build_requires: Union[Type[ValueError], List[str]] = ValueError
 
@@ -19,24 +19,6 @@ class BuildEnvConfig(EnvConfig):
                  build_system: BuildSystem) -> None:
         super().__init__(_cli, config_dict, work_dir, name)
         self._build_system: BuildSystem = build_system
-
-    @property
-    def built_package(self) -> Optional[Path]:
-        return self._built_package
-
-    @built_package.setter
-    def built_package(self, value: Path) -> None:
-        self._built_package = value
-
-    @property
-    def for_build_requires(self) -> List[str]:
-        if self._for_build_requires == ValueError:
-            raise ValueError('for_build_requires not set')
-        return cast(List[str], self._for_build_requires)
-
-    @for_build_requires.setter
-    def for_build_requires(self, value: List[str]) -> None:
-        self._for_build_requires = value
 
     @property
     def build_wheel(self) -> bool:

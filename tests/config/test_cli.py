@@ -14,8 +14,8 @@ def cli_conf(opt: ToxConfig):
     assert opt.build.build_backend is None
     assert opt.build.build_requires == []
 
-    assert opt.default_run_environments == []
-    assert opt.environments == []
+    assert opt.default_tasks == []
+    assert opt.tasks == []
 
 
 @pytest.mark.asyncio

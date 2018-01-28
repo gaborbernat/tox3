@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 from .core import CommonToxConfig
-from .env_build import BuildEnvConfig
-from .env_run import RunEnvConfig
+from .task_build import BuildTaskConfig
+from .task import RunBaseTaskConfig
 from ..project import BuildSystem, ConfDict
 
 
@@ -21,47 +21,47 @@ class ToxConfig(CommonToxConfig):
         self._build_system: BuildSystem = build_system
         super().__init__(options, config_dict)
 
-        def _is_extra_env(key: str, conf: Any) -> bool:
+        def _is_extra_task(key: str, conf: Any) -> bool:
             return isinstance(conf, dict) and \
-                   key not in self.default_run_environments and \
-                   key not in {BuildEnvConfig.NAME, 'set_env'}
+                   key not in self.default_tasks and \
+                   key not in {BuildTaskConfig.NAME, 'set_env'}
 
-        self.default_run_environments: List[str] = cast(List[str], self._config_dict.get('envlist', []))
-        self.extra_defined_environments: List[str] = [k for k, v in self._config_dict.get('env', {}).items() if
-                                                      _is_extra_env(k, v)]
-        defined = self.default_run_environments + self.extra_defined_environments
+        self.default_tasks: List[str] = cast(List[str], self._config_dict.get('envlist', []))
+        self.extra_tasks: List[str] = [k for k, v in self._config_dict.get('task', {}).items() if
+                                       _is_extra_task(k, v)]
+        defined = self.default_tasks + self.extra_tasks
 
-        environments = cast(List[str], getattr(self._cli, 'environments', []))
-        self.run_environments: List[str] = environments if environments else self.default_run_environments
-        self.run_defined_environments = self._run_defined_environments(defined)
+        tasks = cast(List[str], getattr(self._cli, 'tasks', []))
+        self.run_tasks: List[str] = tasks if tasks else self.default_tasks
+        self.run_defined_tasks = self._run_defined_tasks(defined)
 
-        self.environments: List[str] = defined + self.run_defined_environments
+        self.tasks: List[str] = defined + self.run_defined_tasks
 
         def _raw_env(env_name: str) -> ConfDict:
-            env = self._config_dict.get('env', {})
+            env = self._config_dict.get('task', {})
             base = {k: v for k, v in env.items() if k in {'set_env', } or not isinstance(v, dict)}
             if env_name in env:
                 base.update(env[env_name])
             return base
 
-        self.build = BuildEnvConfig(options,
-                                    _raw_env(BuildEnvConfig.NAME),
-                                    work_dir,
-                                    BuildEnvConfig.NAME,
-                                    build_system)
-        self._envs: Dict[str, RunEnvConfig] = {k: RunEnvConfig(options,
-                                                               _raw_env(k),
-                                                               work_dir, k) for k in self.environments}
+        self.build = BuildTaskConfig(options,
+                                     _raw_env(BuildTaskConfig.NAME),
+                                     work_dir,
+                                     BuildTaskConfig.NAME,
+                                     build_system)
+        self._envs: Dict[str, RunBaseTaskConfig] = {k: RunBaseTaskConfig(options,
+                                                                         _raw_env(k),
+                                                                         work_dir, k) for k in self.tasks}
 
-    def _run_defined_environments(self, defined: List[str]) -> List[str]:
+    def _run_defined_tasks(self, defined: List[str]) -> List[str]:
         # environments that are invoked on demand
         run_defined: List[str] = []
-        for env in self.run_environments:
+        for env in self.run_tasks:
             if env not in defined:
                 run_defined.append(env)
         return run_defined
 
-    def _env(self, env_name: str) -> RunEnvConfig:
+    def task(self, env_name: str) -> RunBaseTaskConfig:
         return self._envs[env_name]
 
     @property

@@ -9,7 +9,7 @@ from typing import Callable, Dict, Optional, Union
 import pytest
 
 from toxn.config.cli import OS_ENV_VARS
-from toxn.evaluate import ToxConfig, get_event_loop, load_config, run
+from toxn.evaluate import ToxConfig, get_event_loop, load_config, execute
 
 
 def pytest_configure(config):
@@ -56,7 +56,7 @@ class Project:
             return self.conf_obj
 
         self.monkeypatch.setattr(evaluate, 'load_config', load)
-        return await run(args)
+        return await execute(args)
 
     def clean(self):
         if self.conf_obj is not None:

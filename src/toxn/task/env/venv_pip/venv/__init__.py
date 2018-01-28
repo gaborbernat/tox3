@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import MutableMapping, Optional
 
 from toxn.config.models.venv import Install, VEnvCreateParam, VEnvParams
-from toxn.interpreters import Python, find_python
+from toxn.task.interpreters import Python, find_python
 from toxn.util import CmdLineBufferPrinter, Loggers, list_to_cmd, print_to_sdtout, rm_dir, run
 
 
@@ -78,7 +78,7 @@ def _load_cache(venv: VEnvCreateParam) -> Optional[VEnv]:
             result.logger = venv.logger
         if not _env_deps_changed(venv, result):
             return result
-        rm_dir(venv.dir, 'env core dependencies changed', venv.logger)
+        rm_dir(venv.dir, 'task core dependencies changed', venv.logger)
     return None
 
 

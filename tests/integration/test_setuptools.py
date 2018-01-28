@@ -18,13 +18,13 @@ async def test_setuptools_build(project):
             [tool.toxn]
             envlist = ['py']
             
-            [tool.toxn.env._build]
+            [tool.toxn.task._build]
             python="python"
             
         ''',
-        'setup.py': f'''
-            from setuptools import setup, find_packages
-            setup(
+        'task_base.py': f'''
+            from setuptools import env, find_packages
+            env(
                 name='package',
                 version='0.1.1',
                 packages=find_packages('src'),

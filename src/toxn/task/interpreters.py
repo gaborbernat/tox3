@@ -6,7 +6,7 @@ from typing import Dict, NamedTuple, Optional, Tuple
 
 import py  # type: ignore
 
-from .util import CmdLineBufferPrinter, Loggers, run
+from toxn.util import CmdLineBufferPrinter, Loggers, run
 
 
 class CouldNotFindInterpreter(ValueError):

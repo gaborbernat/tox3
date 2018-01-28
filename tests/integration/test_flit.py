@@ -26,7 +26,7 @@ async def test_flit_build_and_run(project):
             commands = ["pip list --format=columns",
                         "python -c 'from py_mod import main; print(main())'"]
 
-            [tool.toxn.env._build]
+            [tool.toxn.task._build]
             python="python"
 
         ''',

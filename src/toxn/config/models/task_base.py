@@ -4,12 +4,12 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, cast
 
-from toxn.venv import VEnv
+from toxn.task.env.venv_pip.venv import VEnv
 from .core import CommonToxConfig
 from ..project import ConfDict
 
 
-class EnvConfig(CommonToxConfig):
+class TaskConfig(CommonToxConfig):
 
     def __init__(self,
                  _options: argparse.Namespace,

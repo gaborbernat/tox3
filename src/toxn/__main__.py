@@ -1,3 +1,4 @@
+"""main entry point for running toxn"""
 import sys
 
 from toxn.evaluate import main

@@ -6,20 +6,20 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 
-from toxn.config import BuildEnvConfig, RunEnvConfig
+from toxn.config import BuildTaskConfig, RunBaseTaskConfig
 from toxn.config.models.venv import VEnvCreateParam
-from toxn.env.util import EnvLogging, change_dir, install_params
-from toxn.interpreters import CouldNotFindInterpreter
+from toxn.task.util import TaskLogging, change_dir, install_params
+from toxn.task.interpreters import CouldNotFindInterpreter
 from toxn.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
-from toxn.venv import VEnv, setup as setup_venv, strip_env_vars
+from toxn.task.env.venv_pip.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
-async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig, skip_missing_interpreter: bool) -> int:
+async def run_task(config: RunBaseTaskConfig, build_config: BuildTaskConfig, skip_missing_interpreter: bool) -> int:
     start = datetime.datetime.now()
-    logger = EnvLogging(logging.getLogger(__name__), {'env': config.envname})
+    logger = TaskLogging(logging.getLogger(__name__), {'task': config.envname})
     result = 0
     try:
-        logger.info('start setup')
+        logger.info('start env')
         env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
         config.venv = env
 
@@ -29,7 +29,7 @@ async def run_env(config: RunEnvConfig, build_config: BuildEnvConfig, skip_missi
         clean_env_vars(env_vars, config, logger)
 
         with change_dir(config.change_dir, logger):
-            logger.info('setup in %s', human_timedelta(datetime.datetime.now() - start))
+            logger.info('env in %s', human_timedelta(datetime.datetime.now() - start))
             for command in config.commands:
                 logger.info('%s$ %s', config.change_dir, list_to_cmd(command))
                 result = await run(command, logger=logger,
@@ -90,21 +90,21 @@ class EnvFilter:
         return key in self.static or any(pattern.match(key) for pattern in self.patterns)
 
 
-def clean_env_vars(env: MutableMapping[str, str], config: RunEnvConfig, logger: Loggers) -> None:
+def clean_env_vars(env: MutableMapping[str, str], config: RunBaseTaskConfig, logger: Loggers) -> None:
     env_filter = EnvFilter(config.pass_env)
     for key in list(env.keys()):
         if env_filter.keep(key):
-            logger.debug('keep env var %s=%r', key, env[key])
+            logger.debug('keep task var %s=%r', key, env[key])
             continue
-        logger.debug('remove env var %s=%r', key, env[key])
+        logger.debug('remove task var %s=%r', key, env[key])
         del env[key]
     for key, value in config.set_env.items():
-        logger.debug('set env var %s=%r', key, value)
+        logger.debug('set task var %s=%r', key, value)
         env[key] = value
 
 
-async def env_setup(build_config: BuildEnvConfig,
-                    config: RunEnvConfig,
+async def env_setup(build_config: BuildTaskConfig,
+                    config: RunBaseTaskConfig,
                     env: VEnv) -> None:
     if config.install_build_requires:
         await env.install(install_params(f'build requires ({build_config.build_type})',

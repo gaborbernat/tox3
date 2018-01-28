@@ -19,4 +19,4 @@ async def test_work_dir_root_dir(conf):
     cwd = Path(getcwd())
     assert conf.work_dir == cwd / '.tox'
 
-    assert conf.environments == [str(conf.root_dir), str(conf.work_dir)]
+    assert conf.tasks == [str(conf.root_dir), str(conf.work_dir)]

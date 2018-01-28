@@ -3,50 +3,57 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools.build_meta'
 
 [tool.toxn]
-envlist = ['py36', 'type', 'doc']
+default_tasks = ['test', 'type', 'doc', 'doc_link'] # this tasks will be run when invoked with no arg
 
-[tool.toxn.env]
-description = 'run the unit tests with pytest and coverage report'
-change_dir = '<envsitepackagesdir>'
-commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests" <posargs> -n auto']
-set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
-extras = ['testing']
+  [task]
+  python_requires=">=3.6" # the python requires to run these tasks
 
-[tool.toxn.env._build]
-tear_down_commands = ["python setup.py clean --all",
-                      """python -c 'import shutil; shutil.rmtree(\"dist\", True); shutil.rmtree(\".eggs\", True)'"""]
+    [build]
+    # cleanup setuptools build folders
+    tear_down = ["python setup.py clean --all",
+                 """python -c 'import shutil; shutil.rmtree(\"dist\", True); shutil.rmtree(\".eggs\", True)'"""]
 
-[tool.toxn.env.codecov]
-change_dir = '<root_dir>'
-skip_install = true
-pass_env = ["CI", "TRAVIS", "TRAVIS_*", "CODECOV_ENV", "APPVEYOR_*", "APPVEYOR"]
-description = "[CI]: upload coverage data to codecov (depends on coverage running first)"
-deps = ["codecov >= 2.0.13, <3"]
-set_env = {COVERAGE_FILE="<work_dir>/.coverage"}
-commands = ['coverage combine --rcfile="<root_dir>/setup.cfg"',
-            'coverage xml -o "<work_dir>/coverage.xml"',
-            'codecov --file "<work_dir>/coverage.xml"']
+    [test]
+    description = 'run the unit tests with pytest and coverage report'
+    change_dir = '<envsitepackagesdir>'
+    commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests" <posargs> -n auto']
+    set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
+    extras = ['testing']
 
-[tool.toxn.env.type]
-change_dir = '<root_dir>'
-description = "run mypy and check for type violations of the code base"
-deps = ["mypy >= 0.560, <1"]
-commands = ["python -m mypy src --strict"]
+    [codecov]
+    dependson = ["test"]
+    skip_install = true
+    pass_env = ["CI", "TRAVIS", "TRAVIS_*", "CODECOV_ENV", "APPVEYOR_*", "APPVEYOR"]
+    description = "[CI]: upload coverage data to codecov (depends on coverage running first)"
+    deps = ["codecov >= 2.0.13, <3"]
+    set_env = {COVERAGE_FILE="<work_dir>/.coverage"}
+    commands = ['coverage combine --rcfile="<root_dir>/setup.cfg"',
+                'coverage xml -o "<work_dir>/coverage.xml"',
+                'codecov --file  "<work_dir>/coverage.xml"']
 
-[tool.toxn.env.doc]
-change_dir = '<root_dir>'
-pass_env =["http_proxy", "https_proxy", "no_proxy", "SSL_CERT_FILE"]
-description = "generate the project documenntation into <work_dir>/docs_out and check links are valid"
-extras = ['doc']
-commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html <posargs>',
-            'sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
+    [type]
+    description = "run mypy and check for type violations of the code base"
+    deps = ["mypy >= 0.560, <1"]
+    commands = ["python -m mypy src --strict"]
 
-[tool.toxn.env.dev]
-description = "generates a development environment with all this projects dependencies, and in-place install of the package"
-extras = ['testing', 'doc']
-use_develop = true
-install_build_requires = true
-install_for_build_requires = true
-commands = ["pip list --format=columns",
-            "python -c 'import sys;print(sys.version);print(sys.executable)'"]
+    [doc]
+    pass_env =["http_proxy", "https_proxy", "no_proxy", "SSL_CERT_FILE"]
+    description = "generate the project documenntation into <work_dir>/docs_out"
+    extras = ['doc']
+    commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html <posargs>']
+
+    [doc_link]
+    base = "doc"
+    description = "check that links in the documentation are valid (redirect/ok)"
+    commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
+
+
+    [dev]
+    description = "generates a development environment with all this projects dependencies, and in-place install of the package"
+    extras = ['testing', 'doc']
+    use_develop = true
+    install_build_requires = true
+    install_for_build_requires = true
+    commands = ["pip list --format=columns",
+          "python -c 'import sys;print(sys.version);print(sys.executable)'"]
 
