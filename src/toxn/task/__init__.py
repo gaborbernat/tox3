@@ -9,7 +9,7 @@ toxn run tasks in order of their dependency graph
         - optionally the for build required packages
         - defines within the tox file (either directly expressed, or via a requirement file)
         - dependencies of the package
-    - whenever the Python interpreter or the dependencies change in a non extending way we recreated the env
+    - whenever the Python interpreter or the dependencies change in a non extending way we recreated the task
     - commands:
         - setup
         - core

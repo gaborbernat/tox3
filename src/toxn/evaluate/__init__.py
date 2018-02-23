@@ -31,7 +31,7 @@ def _setup_logging(verbose: str, quiet: bool, logging_fmt: str) -> None:
         ROOT_LOGGER.setLevel(level)
         stream_handler.setFormatter(formatter)
         ROOT_LOGGER.addHandler(stream_handler)
-        LOGGER.debug('env logging to %s', logging.getLevelName(level))
+        LOGGER.debug('task logging to %s', logging.getLevelName(level))
 
 
 def get_event_loop() -> asyncio.AbstractEventLoop:

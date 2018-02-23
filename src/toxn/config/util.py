@@ -1,23 +1,28 @@
 import re
 from pathlib import Path
-from typing import Any, Set
+from typing import Any, Dict, Set
 
 
 class Substitute:
-    _pattern = re.compile(r'<(\w+)>')
+    _pattern = re.compile(r'<(?P<key>\w+)(?P<default>:.*)?>')
 
     def _substitute(self, arg: str) -> str:
         matches = Substitute._pattern.finditer(arg)
         handled: Set[str] = set()
         for match in matches:
+            values: Dict[str, str] = match.groupdict()
             try:
-                key = match.group(1)
+                key = values['key']
+                default = values.get('default')
                 if key in handled:
                     continue
                 handled.add(key)
                 value = getattr(self, key, None)
                 if value is None:
-                    continue
+                    if 'default' not in values:
+                        continue
+                    else:
+                        value = default
                 if not isinstance(value, str):
                     value = str(value)
                 arg = arg.replace(f'<{key}>', value)

@@ -16,7 +16,7 @@ tear_down = ["python setup.py clean --all",
 [tool.toxn.task.test]
 description = 'run the unit tests with pytest and coverage report'
 change_dir = '<envsitepackagesdir>'
-commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests" <posargs> -n auto']
+commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests"  <posargs:-n auto>']
 set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
 extras = ['testing']
 

@@ -22,7 +22,7 @@ async def run_task(config: RunTaskConfig,
     logger = TaskLogging(logging.getLogger(__name__), {'task': config.envname})
     result = 0
     try:
-        logger.info('start env')
+        logger.info('start task')
         env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
         config.venv = env
 
@@ -32,7 +32,7 @@ async def run_task(config: RunTaskConfig,
         clean_env_vars(env_vars, config, logger)
 
         with change_dir(config.change_dir, logger):
-            logger.info('env in %s', human_timedelta(datetime.datetime.now() - start))
+            logger.info('task in %s', human_timedelta(datetime.datetime.now() - start))
             for command in config.commands:
                 logger.info('%s$ %s', config.change_dir, list_to_cmd(command))
                 result = await run(command, logger=logger,
