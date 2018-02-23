@@ -57,7 +57,7 @@ class BuildTaskConfig(TaskConfig):
 
     @property
     def teardown_commands(self) -> List[List[str]]:
-        return self._extract_command(self._config_dict.get('tear_down_commands', []))
+        return self._extract_command(self._config_dict.get('tear_down', []))
 
 
 class BuiltTaskConfig(BuildTaskConfig):

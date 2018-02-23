@@ -6,7 +6,7 @@ python:
   - 3.7-dev
   - nightly
 env:
-  ENV=py
+  TASK=test
 
 matrix:
   fast_finish: true
@@ -16,17 +16,17 @@ matrix:
   - python: nightly
   include:
     - python: 3.6
-      env: ENV=type
+      TASK: TASK=type
     - python: 3.6
-      env: ENV=doc
+      TASK: TASK=doc
 
 install:
   - pip install .
 
 script:
   - pip list --format=columns
-  - python -m toxn -v DEBUG -e $ENV
+  - python -m toxn -v DEBUG -t $TASK
   
 after_success:
-  - export CODECOV_ENV="$ENV-$TRAVIS_PYTHON_VERSION"
-  - if [[ $ENV == "py" ]]; then python -m toxn -v DEBUG -e codecov; fi
+  - export CODECOV_TASK="$TASK-$TRAVIS_PYTHON_VERSION"
+  - if [[ $TASK == "py" ]]; then python -m toxn -v DEBUG -t codecov; fi
