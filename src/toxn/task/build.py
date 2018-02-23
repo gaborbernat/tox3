@@ -3,49 +3,28 @@ import datetime
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Type, Union, cast
+from typing import List, Optional, cast
 
-from toxn.config.models.task_build import BuildTaskConfig
+from toxn.config.models.task.build import BuildTaskConfig, BuiltTaskConfig
 from toxn.config.models.venv import VEnvCreateParam
-from toxn.task.env.venv_pip.venv import VEnv, setup as setup_venv
+from toxn.task.env.venv_pip.venv import VEnv, install, setup as setup_venv
 from toxn.task.util import TaskLogging, change_dir, install_params
 from toxn.util import CmdLineBufferPrinter, human_timedelta, list_to_cmd, rm_dir, run
 
 LOGGER = TaskLogging(logging.getLogger(__name__), {'task': 'build'})
 
 
-class BuildRunConfig(BuildTaskConfig):
-    _built_package: Optional[Path] = None
-    _for_build_requires: Union[Type[ValueError], List[str]] = ValueError
-
-    def __init__(self,
-                 base: BuildTaskConfig,
-                 for_build_requires,
-                 built_package) -> None:
-        self._for_build_requires = for_build_requires
-        self._built_package = built_package
-        super().__init__(base._cli, base._config_dict, base.work_dir, base.name, base._build_system)
-
-    @property
-    def built_package(self) -> Optional[Path]:
-        return self._built_package
-
-    @property
-    def for_build_requires(self) -> List[str]:
-        return cast(List[str], self._for_build_requires)
-
-
-async def build(config: BuildTaskConfig) -> BuildRunConfig:
+async def build(config: BuildTaskConfig) -> BuiltTaskConfig:
     start = datetime.datetime.now()
     result = None
-    name = '_build'
+    name = 'build'
     try:
         LOGGER.info('build project %s as %s', config.root_dir, config.build_type)
         env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python, LOGGER))
         config.venv = env
-        await env.install(install_params(f'build requires',
-                                         config.build_requires,
-                                         config))
+        await install(env, install_params(f'build requires',
+                                          config.build_requires,
+                                          config))
 
         out_dir = await _make_and_clean_out_dir(env)
 
@@ -54,9 +33,9 @@ async def build(config: BuildTaskConfig) -> BuildRunConfig:
                 for_build_requires = await _get_requires_for_build(env, config.build_type,
                                                                    cast(str, config.build_backend_base),
                                                                    cast(str, config.build_backend_full))
-                await env.install(install_params(f'for build requires',
-                                                 config.for_build_requires,
-                                                 config))
+                await install(env, install_params(f'for build requires',
+                                                  for_build_requires,
+                                                  config))
             else:
                 for_build_requires = []
 
@@ -69,7 +48,7 @@ async def build(config: BuildTaskConfig) -> BuildRunConfig:
                                     exit_on_fail=True)
             if result_code:
                 break
-        return BuildRunConfig(config, for_build_requires, built_package)
+        return BuiltTaskConfig(config, for_build_requires, built_package)
     finally:
         LOGGER.info('built %s in %s', result, human_timedelta(datetime.datetime.now() - start))
 
@@ -91,7 +70,7 @@ print(basename)
         result = out_dir / printer.last
     else:
         build_cmd = 'sdist' if build_type == 'sdist' else 'bdist_wheel'
-        await run([env.params.executable, 'task_base.py', build_cmd, '--dist-dir', out_dir, "--formats=zip"],
+        await run([env.params.executable, 'base.py', build_cmd, '--dist-dir', out_dir, "--formats=zip"],
                   logger=LOGGER)
         # noinspection PyTypeChecker
         result = next(out_dir.iterdir())

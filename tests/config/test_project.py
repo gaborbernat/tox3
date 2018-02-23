@@ -14,12 +14,12 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'
 
 [tool.toxn]
-  envlist = ['py36']
+  default_tasks = ['py36']
 """)
     build, project, filename = await from_toml(content)
     assert build.backend == 'setuptools:build_meta'
     assert build.requires == ['setuptools >= 38.2.4']
-    assert project == {'envlist': ['py36']}
+    assert project == {'default_tasks': ['py36']}
     assert filename is None
 
 
@@ -33,10 +33,10 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools:build_meta'
 
 [tool.toxn]
-  envlist = ['py36']
+  default_tasks = ['py36']
 """)
     build, project, config_path = await from_toml(filename)
     assert build.backend == 'setuptools:build_meta'
     assert build.requires == ['setuptools >= 38.2.4']
-    assert project == {'envlist': ['py36']}
+    assert project == {'default_tasks': ['py36']}
     assert filename == config_path

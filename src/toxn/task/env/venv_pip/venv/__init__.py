@@ -7,6 +7,7 @@ from functools import partial
 from pathlib import Path
 from typing import MutableMapping, Optional
 
+from toxn.config.models.task.base import VEnv
 from toxn.config.models.venv import Install, VEnvCreateParam, VEnvParams
 from toxn.task.interpreters import Python, find_python
 from toxn.util import CmdLineBufferPrinter, Loggers, list_to_cmd, print_to_sdtout, rm_dir, run
@@ -22,26 +23,17 @@ def strip_env_vars(bin_path: Path) -> MutableMapping[str, str]:
     return os_env
 
 
-class VEnv:
-
-    def __init__(self, python: Python, params: VEnvParams, logger: Loggers) -> None:
-        self.params: VEnvParams = params
-        self.python: Python = python
-        self.logger: Loggers = logger
-        self.logger.info('virtual environment executable for %r ready at %r', self.python.python_name,
-                         self.params.executable)
-
-    async def install(self, params: Install) -> None:
-        if params.packages:
-            cmd = list(params.base_cmd)
-            if params.use_develop:
-                cmd.append('-e')
-            cmd.extend(params.packages)
-            self.logger.info('install %s', list_to_cmd(cmd))
-            await run(cmd, env=strip_env_vars(self.params.bin_path), shell=True, logger=self.logger,
-                      exit_on_fail=True,
-                      stdout=partial(print_to_sdtout, level=logging.DEBUG),
-                      stderr=partial(print_to_sdtout, level=logging.ERROR))
+async def install(venv: VEnv, params: Install) -> None:
+    if params.packages:
+        cmd = list(params.base_cmd)
+        if params.use_develop:
+            cmd.append('-e')
+        cmd.extend(params.packages)
+        venv.logger.info('install %s', list_to_cmd(cmd))
+        await run(cmd, env=strip_env_vars(venv.params.bin_path), shell=True, logger=venv.logger,
+                  exit_on_fail=True,
+                  stdout=partial(print_to_sdtout, level=logging.DEBUG),
+                  stderr=partial(print_to_sdtout, level=logging.ERROR))
 
 
 async def setup(params: VEnvCreateParam) -> VEnv:

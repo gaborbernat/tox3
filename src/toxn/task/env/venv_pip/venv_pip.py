@@ -9,11 +9,11 @@ from toxn.task.env.api import TaskEnv
 
 
 class VenvPip(TaskEnv):
-    def __init__(self):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def add_dependencies(self, deps: List[str]) -> None:
         pass
 
-    def add_dependencies(self, deps: List[str]):
-        pass
-
-    def run(self, cmd):
+    def run(self, cmd: List[str]) -> None:
         pass

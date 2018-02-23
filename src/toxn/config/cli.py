@@ -64,14 +64,14 @@ def build_parser() -> argparse.ArgumentParser:
                         default=None, metavar='file', env_var=TOX_CONFIG,
                         help='the pyproject.toml config file to use (determines the root directory)')
     parser.add_argument("-r", "--recreate", action="store_true", dest="recreate",
-                        help="force recreation of virtual environments")
-    parser.add_argument('-e', '--envs', dest='environments', metavar='e',
-                        help='run only this run environments', nargs="+", type=str, env_var=TOX_ENV)
+                        help="force recreation of the task environments")
+    parser.add_argument('-t', '--tasks', dest='tasks', metavar='e',
+                        help='run only this task', nargs="+", type=str, env_var=TOX_ENV)
     parser.add_argument('args', nargs='*', help='additional arguments passed to commands as positional substitution')
     parser.add_argument('-a', '--action', choices=ACTIONS, help='action to perform once configuration loaded',
                         default='run')
     parser.add_argument('-p', '--parallel', dest='run_parallel', action="store_true",
-                        help='run tox environments in parallel')
+                        help='run tasks in parallel')
     return cast(argparse.ArgumentParser, parser)
 
 

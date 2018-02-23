@@ -28,6 +28,7 @@ async def list_tasks(config: ToxConfig, logger: logging.Logger) -> int:
     return 0
 
 
-async def list_bare(tasks: List[str], logger: logging.Logger):
+async def list_bare(tasks: List[str], logger: logging.Logger) -> int:
     for task in tasks:
         logger.info(task)
+    return 0

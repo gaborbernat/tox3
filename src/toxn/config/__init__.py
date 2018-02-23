@@ -11,8 +11,7 @@ from typing import IO, Sequence, Union
 
 from toxn.config.models.core import root_dir
 from .cli import parse
-from .models.task_build import BuildTaskConfig
-from .models.task import RunBaseTaskConfig
+from toxn.config.models.task.run import RunTaskConfig
 from .models.toxn import ToxConfig
 from .project import BuildSystem, ConfDict, from_toml
 from .util import Substitute
@@ -29,4 +28,4 @@ async def load(argv: Sequence[str]) -> ToxConfig:
     return ToxConfig(options, build_system, conf_dict, conf_path, work_dir)
 
 
-__all__ = ('ToxConfig', 'RunBaseTaskConfig', 'BuildTaskConfig', 'load')
+__all__ = ('ToxConfig', 'RunTaskConfig', 'BuildTaskConfig', 'load')

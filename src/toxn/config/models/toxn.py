@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 from .core import CommonToxConfig
-from .task_build import BuildTaskConfig
-from .task import RunBaseTaskConfig
+from toxn.config.models.task.build import BuildTaskConfig
+from toxn.config.models.task.run import RunTaskConfig
 from ..project import BuildSystem, ConfDict
 
 
@@ -26,7 +26,7 @@ class ToxConfig(CommonToxConfig):
                    key not in self.default_tasks and \
                    key not in {BuildTaskConfig.NAME, 'set_env'}
 
-        self.default_tasks: List[str] = cast(List[str], self._config_dict.get('envlist', []))
+        self.default_tasks: List[str] = cast(List[str], self._config_dict.get('default_tasks', []))
         self.extra_tasks: List[str] = [k for k, v in self._config_dict.get('task', {}).items() if
                                        _is_extra_task(k, v)]
         defined = self.default_tasks + self.extra_tasks
@@ -49,9 +49,9 @@ class ToxConfig(CommonToxConfig):
                                      work_dir,
                                      BuildTaskConfig.NAME,
                                      build_system)
-        self._envs: Dict[str, RunBaseTaskConfig] = {k: RunBaseTaskConfig(options,
-                                                                         _raw_env(k),
-                                                                         work_dir, k) for k in self.tasks}
+        self._envs: Dict[str, RunTaskConfig] = {k: RunTaskConfig(options,
+                                                                 _raw_env(k),
+                                                                 work_dir, k) for k in self.tasks}
 
     def _run_defined_tasks(self, defined: List[str]) -> List[str]:
         # environments that are invoked on demand
@@ -61,7 +61,7 @@ class ToxConfig(CommonToxConfig):
                 run_defined.append(env)
         return run_defined
 
-    def task(self, env_name: str) -> RunBaseTaskConfig:
+    def task(self, env_name: str) -> RunTaskConfig:
         return self._envs[env_name]
 
     @property

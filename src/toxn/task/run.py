@@ -6,15 +6,18 @@ from functools import partial
 from pathlib import Path
 from typing import Iterable, List, MutableMapping, Optional, Pattern, Set
 
-from toxn.config import BuildTaskConfig, RunBaseTaskConfig
+from toxn.config import RunTaskConfig
+from toxn.config.models.task.build import BuiltTaskConfig
 from toxn.config.models.venv import VEnvCreateParam
-from toxn.task.util import TaskLogging, change_dir, install_params
+from toxn.task.env.venv_pip.venv import VEnv, install, setup as setup_venv, strip_env_vars
 from toxn.task.interpreters import CouldNotFindInterpreter
+from toxn.task.util import TaskLogging, change_dir, install_params
 from toxn.util import Loggers, human_timedelta, list_to_cmd, print_to_sdtout, run
-from toxn.task.env.venv_pip.venv import VEnv, setup as setup_venv, strip_env_vars
 
 
-async def run_task(config: RunBaseTaskConfig, build_config: BuildTaskConfig, skip_missing_interpreter: bool) -> int:
+async def run_task(config: RunTaskConfig,
+                   built_config: Optional[BuiltTaskConfig],
+                   skip_missing_interpreter: bool) -> int:
     start = datetime.datetime.now()
     logger = TaskLogging(logging.getLogger(__name__), {'task': config.envname})
     result = 0
@@ -23,7 +26,7 @@ async def run_task(config: RunBaseTaskConfig, build_config: BuildTaskConfig, ski
         env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
         config.venv = env
 
-        await env_setup(build_config, config, env)
+        await env_setup(built_config, config, env)
 
         env_vars = strip_env_vars(env.params.bin_path)
         clean_env_vars(env_vars, config, logger)
@@ -90,7 +93,7 @@ class EnvFilter:
         return key in self.static or any(pattern.match(key) for pattern in self.patterns)
 
 
-def clean_env_vars(env: MutableMapping[str, str], config: RunBaseTaskConfig, logger: Loggers) -> None:
+def clean_env_vars(env: MutableMapping[str, str], config: RunTaskConfig, logger: Loggers) -> None:
     env_filter = EnvFilter(config.pass_env)
     for key in list(env.keys()):
         if env_filter.keep(key):
@@ -103,30 +106,30 @@ def clean_env_vars(env: MutableMapping[str, str], config: RunBaseTaskConfig, log
         env[key] = value
 
 
-async def env_setup(build_config: BuildTaskConfig,
-                    config: RunBaseTaskConfig,
+async def env_setup(built: Optional[BuiltTaskConfig],
+                    config: RunTaskConfig,
                     env: VEnv) -> None:
-    if config.install_build_requires:
-        await env.install(install_params(f'build requires ({build_config.build_type})',
-                                         build_config.build_requires,
-                                         config))
-    if not build_config.build_wheel or config.install_for_build_requires:
-        await env.install(install_params(f'for build requires ({build_config.build_type})',
-                                         build_config.for_build_requires,
-                                         config))
+    if config.install_build_requires and built is not None:
+        await install(env, install_params(f'build requires ({built.build_type})',
+                                          built.build_requires,
+                                          config))
+    if built is not None and (not built.build_wheel or config.install_for_build_requires):
+        await install(env, install_params(f'for build requires ({built.build_type})',
+                                          built.for_build_requires,
+                                          config))
 
     if config.deps:
-        await env.install(install_params(f'deps',
-                                         config.deps,
-                                         config))
+        await install(env, install_params(f'deps',
+                                          config.deps,
+                                          config))
     extras = config.extras
-    if build_config.skip is False and config.install_build:
+    if built is not None and built.skip is False and config.install_build:
         if config.use_develop:
             project_package: Optional[Path] = config.root_dir
         else:
-            project_package = build_config.built_package
+            project_package = built.package
         package = '{}{}'.format(project_package, '[{}]'.format(','.join(extras)) if extras else '')
-        await env.install(install_params(f'project',
-                                         [package],
-                                         config,
-                                         config.use_develop))
+        await install(env, install_params(f'project',
+                                          [package],
+                                          config,
+                                          config.use_develop))

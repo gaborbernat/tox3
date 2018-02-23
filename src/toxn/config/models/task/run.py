@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import List, Optional
 
 from toxn.util import list_to_cmd
-from .task_base import TaskConfig
+from .base import TaskConfig
 
 
-class RunBaseTaskConfig(TaskConfig):
+class RunTaskConfig(TaskConfig):
 
     @property
     def commands(self) -> List[List[str]]:

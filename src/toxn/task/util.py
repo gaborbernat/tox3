@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Tuple
 
-from toxn.config.models.task_base import TaskConfig
+from toxn.config.models.task.base import TaskConfig
 from toxn.config.models.venv import Install
 from toxn.util import Loggers
 

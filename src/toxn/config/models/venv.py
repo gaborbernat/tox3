@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Tuple
 
 from toxn.util import Loggers
 
@@ -28,3 +28,27 @@ class Install(NamedTuple):
     packages: List[str]
     base_cmd: List[str]
     use_develop: bool
+
+
+VersionInfo = Tuple[int, int, int, str]
+
+
+class Python(NamedTuple):
+    python_name: str
+    exe: Path
+    version: str
+    version_info: VersionInfo
+
+    @property
+    def major_version(self) -> int:
+        return self.version_info[0]
+
+
+class VEnv:
+
+    def __init__(self, python: Python, params: VEnvParams, logger: Loggers) -> None:
+        self.params: VEnvParams = params
+        self.python: Python = python
+        self.logger: Loggers = logger
+        self.logger.info('virtual environment executable for %r ready at %r', self.python.python_name,
+                         self.params.executable)

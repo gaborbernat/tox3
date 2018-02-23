@@ -11,17 +11,18 @@ requires = ['setuptools >= 38.2.4']
 build-backend = 'setuptools.build_meta'
 
 [tool.toxn]
-  envlist = ['py36']
+default_tasks = ['py36']
 
 [tool.toxn.task]
-  python = 'python3.6'
+python = 'python3.6'
 
 [tool.toxn.task.py36]
-  deps = ["pytest"]
-  description = 'run the unit tests with pytest'
-  commands = ["pytest tests"]
+deps = ["pytest"]
+description = 'run the unit tests with pytest'
+commands = ["pytest tests"]
+
 [tool.toxn.task.dev]
-  commands = [""]
+commands = [""]
 ''')
     conf: ToxConfig = await env.conf()
 

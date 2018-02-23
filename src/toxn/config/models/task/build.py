@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Optional, Type, Union, cast
 
 from toxn.config.project import BuildSystem, ConfDict
-from .task_base import TaskConfig
+from .base import TaskConfig
 
 
 class BuildTaskConfig(TaskConfig):
@@ -58,3 +58,22 @@ class BuildTaskConfig(TaskConfig):
     @property
     def teardown_commands(self) -> List[List[str]]:
         return self._extract_command(self._config_dict.get('tear_down_commands', []))
+
+
+class BuiltTaskConfig(BuildTaskConfig):
+
+    def __init__(self,
+                 base: BuildTaskConfig,
+                 for_build_requires: List[str],
+                 built_package: Path) -> None:
+        self._for_build_requires: List[str] = for_build_requires
+        self._built_package: Path = built_package
+        super().__init__(base._cli, base._config_dict, base.work_dir, base.name, base._build_system)
+
+    @property
+    def package(self) -> Optional[Path]:
+        return self._built_package
+
+    @property
+    def for_build_requires(self) -> List[str]:
+        return cast(List[str], self._for_build_requires)

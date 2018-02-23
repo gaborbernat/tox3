@@ -2,29 +2,16 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, NamedTuple, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import py  # type: ignore
 
+from toxn.config.models.venv import Python, VersionInfo
 from toxn.util import CmdLineBufferPrinter, Loggers, run
 
 
 class CouldNotFindInterpreter(ValueError):
     pass
-
-
-VersionInfo = Tuple[int, int, int, str]
-
-
-class Python(NamedTuple):
-    python_name: str
-    exe: Path
-    version: str
-    version_info: VersionInfo
-
-    @property
-    def major_version(self) -> int:
-        return self.version_info[0]
 
 
 async def find_python(python: str, logger: Loggers) -> Python:

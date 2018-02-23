@@ -11,8 +11,7 @@ async def test_work_dir_root_dir(conf):
     env = conf('''
     [tool.toxn]
     work_dir = ".tox"
-    envlist = ["<root_dir>", "<work_dir>"]
-    
+    default_tasks = ["<root_dir>", "<work_dir>"]
     ''')
     conf: ToxConfig = await env.conf()
 

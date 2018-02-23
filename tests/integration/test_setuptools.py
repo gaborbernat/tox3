@@ -11,20 +11,19 @@ from toxn.config import ToxConfig
 async def test_setuptools_build(project):
     proj = project({
         'pyproject.toml': f'''
-            [build-system]
-            requires = ['setuptools >= 38.2.4']
-            build-backend = 'setuptools.build_meta'
-            
-            [tool.toxn]
-            envlist = ['py']
-            
-            [tool.toxn.task._build]
-            python="python"
-            
+[build-system]
+requires = ['setuptools >= 38.2.4']
+build-backend = 'setuptools.build_meta'
+
+[tool.toxn]
+default_tasks = ['py']
+
+[tool.toxn.task.build]
+python="python"  
         ''',
-        'task_base.py': f'''
-            from setuptools import env, find_packages
-            env(
+        'setup.py': f'''
+            from setuptools import setup, find_packages
+            setup(
                 name='package',
                 version='0.1.1',
                 packages=find_packages('src'),

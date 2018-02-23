@@ -4,9 +4,9 @@ import shlex
 from pathlib import Path
 from typing import Dict, List, Optional, cast
 
-from toxn.task.env.venv_pip.venv import VEnv
-from .core import CommonToxConfig
-from ..project import ConfDict
+from toxn.config.project import ConfDict
+from ..core import CommonToxConfig
+from ..venv import VEnv
 
 
 class TaskConfig(CommonToxConfig):
