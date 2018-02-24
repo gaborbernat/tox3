@@ -37,7 +37,7 @@ class ToxConfig(CommonToxConfig):
 
         self.tasks: List[str] = defined + self.run_defined_tasks
 
-        def extract_base_conf(all_task_conf):
+        def extract_base_conf(all_task_conf: ConfDict) -> ConfDict:
             return {k: v for k, v in all_task_conf.items() if k in {'set_env', } or not isinstance(v, dict)}
 
         def _raw_task(task: str) -> ConfDict:
@@ -47,7 +47,7 @@ class ToxConfig(CommonToxConfig):
 
             return task_conf
 
-        def merge_conf(task: str, all_task_conf: ConfDict, task_conf: ConfDict):
+        def merge_conf(task: str, all_task_conf: ConfDict, task_conf: ConfDict) -> None:
             if task in all_task_conf:
                 cur_conf = all_task_conf[task]
                 if 'base' in cur_conf:
