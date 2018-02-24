@@ -68,7 +68,7 @@ async def execute(argv: Sequence[str]) -> int:
     elif config.action == 'list':
         result = await list_tasks(config, LOGGER)
     elif config.action == 'list-bare':
-        list_bare(config.tasks, LOGGER)
+        result = await list_bare(config.tasks, LOGGER)
     elif config.action == 'list-default-bare':
-        list_bare(config.default_tasks, LOGGER)
+        result = await list_bare(config.default_tasks, LOGGER)
     return result

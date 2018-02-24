@@ -14,10 +14,10 @@ class BuildTaskConfig(TaskConfig):
     def __init__(self,
                  _cli: argparse.Namespace,
                  config_dict: ConfDict,
-                 work_dir: Path,
+                 project_work_dir: Path,
                  name: str,
                  build_system: BuildSystem) -> None:
-        super().__init__(_cli, config_dict, work_dir, name)
+        super().__init__(_cli, config_dict, project_work_dir, name)
         self._build_system: BuildSystem = build_system
 
     @property

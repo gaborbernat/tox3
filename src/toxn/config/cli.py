@@ -55,7 +55,7 @@ class Tox3HelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = configargparse.ArgParser("toxn", formatter_class=Tox3HelpFormatter,
+    parser = configargparse.ArgParser(prog="toxn", formatter_class=Tox3HelpFormatter,
                                       epilog=f'{toxn.__version__} from {toxn.__file__}')
     pre_process_flags(parser)
     parser.add_argument("--version", action="store_true", dest="print_version",
@@ -67,11 +67,13 @@ def build_parser() -> argparse.ArgumentParser:
                         help="force recreation of the task environments")
     parser.add_argument('-t', '--tasks', dest='tasks', metavar='e',
                         help='run only this task', nargs="+", type=str, env_var=TOX_ENV)
-    parser.add_argument('args', nargs='*', help='additional arguments passed to commands as positional substitution')
     parser.add_argument('-a', '--action', choices=ACTIONS, help='action to perform once configuration loaded',
                         default='run')
     parser.add_argument('-p', '--parallel', dest='run_parallel', action="store_true",
                         help='run tasks in parallel')
+    parser.add_argument('args', nargs=argparse.REMAINDER,
+                        help='additional arguments passed to commands as positional substitution',
+                        default=None)
     return cast(argparse.ArgumentParser, parser)
 
 

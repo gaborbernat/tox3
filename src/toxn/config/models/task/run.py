@@ -36,8 +36,12 @@ class RunTaskConfig(TaskConfig):
         return self._config_dict.get('use_develop', False)
 
     @property
-    def posargs(self) -> str:
-        args = getattr(self._cli, 'args', [])
+    def posargs(self) -> Optional[str]:
+        args = getattr(self._cli, 'args')
+        if not args:
+            return None
+        if args[0] == '--':
+            args = args[1:]
         return list_to_cmd(args)
 
     @property

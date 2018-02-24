@@ -39,7 +39,7 @@ python="python"
     assert result == 0
     conf: ToxConfig = proj.conf_obj
 
-    assert conf.build.envsitepackagesdir
+    assert conf.build.site_packages_dir
     assert conf.build.envbindir
-    assert conf.build.envpython
+    assert conf.build.python_exec
     assert conf.build.envdir

@@ -19,7 +19,7 @@ async def run_task(config: RunTaskConfig,
                    built_config: Optional[BuiltTaskConfig],
                    skip_missing_interpreter: bool) -> int:
     start = datetime.datetime.now()
-    logger = TaskLogging(logging.getLogger(__name__), {'task': config.envname})
+    logger = TaskLogging(logging.getLogger(__name__), {'task': config.name})
     result = 0
     try:
         logger.info('start task')

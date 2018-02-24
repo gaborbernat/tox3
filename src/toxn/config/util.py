@@ -1,34 +1,41 @@
 import re
 from pathlib import Path
-from typing import Any, Dict, Set
+from typing import Any, Dict, List
 
 
 class Substitute:
     _pattern = re.compile(r'<(?P<key>\w+)(?P<default>:.*)?>')
 
     def _substitute(self, arg: str) -> str:
-        matches = Substitute._pattern.finditer(arg)
-        handled: Set[str] = set()
-        for match in matches:
-            values: Dict[str, str] = match.groupdict()
-            try:
+        while True:
+            matches = list(Substitute._pattern.finditer(arg))
+            if not matches:
+                return arg
+            pieces: List[Any] = []
+            pos = 0
+            for match in matches:
+                values: Dict[str, str] = match.groupdict()
+
                 key = values['key']
-                default = values.get('default')
-                if key in handled:
+                try:
+                    value = getattr(self, key, None)
+                except AttributeError:
                     continue
-                handled.add(key)
-                value = getattr(self, key, None)
                 if value is None:
                     if 'default' not in values:
                         continue
                     else:
-                        value = default
-                if not isinstance(value, str):
-                    value = str(value)
-                arg = arg.replace(f'<{key}>', value)
-            except AttributeError:
-                pass
-        return arg
+                        default = values.get('default')
+                        value = '' if default is None else default[1:]
+
+                start, end = match.span()
+                pieces.append(arg[pos: start])
+                pieces.append(value)
+                pos = end
+            if pos == 0:  # no replacement, short it
+                return arg
+            pieces.append(arg[pos:])
+            arg = ''.join(str(p) for p in pieces)
 
     def __getattribute__(self, item: str) -> Any:
         result = super().__getattribute__(item)

@@ -70,7 +70,7 @@ class ToxConfig(CommonToxConfig):
             if task not in defined:
                 run_defined.append(task)
         return run_defined
-
+                                    
     def task(self, name: str) -> RunTaskConfig:
         return self._tasks[name]
 

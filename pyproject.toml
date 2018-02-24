@@ -15,9 +15,9 @@ tear_down = ["python setup.py clean --all",
 
 [tool.toxn.task.test]
 description = 'run the unit tests with pytest and coverage report'
-change_dir = '<envsitepackagesdir>'
-commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests"  <posargs:-n auto>']
-set_env = {COVERAGE_FILE="<work_dir>/.coverage.<envname>"}
+change_dir = '<site_packages_dir>'
+commands = ['python -m pytest --cov-config="<root_dir>/setup.cfg" --cov=toxn "<root_dir>/tests" <posargs:-n auto>']
+set_env = {COVERAGE_FILE="<project_work_dir>/.coverage.<python>"}
 extras = ['testing']
 
 [tool.toxn.task.codecov]
@@ -26,10 +26,10 @@ skip_install = true
 pass_env = ["CI", "TRAVIS", "TRAVIS_*", "CODECOV_ENV", "APPVEYOR_*", "APPVEYOR"]
 description = "[CI]: upload coverage data to codecov (depends on coverage running first)"
 deps = ["codecov >= 2.0.13, <3"]
-set_env = {COVERAGE_FILE="<work_dir>/.coverage"}
+set_env = {COVERAGE_FILE="<project_work_dir>/.coverage"}
 commands = ['coverage combine --rcfile="<root_dir>/setup.cfg"',
-            'coverage xml -o "<work_dir>/coverage.xml"',
-            'codecov --file  "<work_dir>/coverage.xml"']
+            'coverage xml -o "<project_work_dir>/coverage.xml"',
+            'codecov --file  "<project_work_dir>/coverage.xml"']
 
 [tool.toxn.task.type]
 description = "run mypy and check for type violations of the code base"
@@ -38,14 +38,14 @@ commands = ["python -m mypy src --strict"]
 
 [tool.toxn.task.doc]
 pass_env =["http_proxy", "https_proxy", "no_proxy", "SSL_CERT_FILE"]
-description = "generate the project documenntation into <work_dir>/docs_out"
+description = "generate the project documenntation into <project_work_dir>/docs_out"
 extras = ['doc']
-commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b html <posargs>']
+commands = ['sphinx-build -d "<project_work_dir>/docs_doctree" doc "<project_work_dir>/docs_out" --color -W -b html <posargs>']
 
 [tool.toxn.task.doc_link]
 base = "doc"
 description = "check that links in the documentation are valid (redirect/ok)"
-commands = ['sphinx-build -d "<work_dir>/docs_doctree" doc "<work_dir>/docs_out" --color -W -b linkcheck']
+commands = ['sphinx-build -d "<project_work_dir>/docs_doctree" doc "<project_work_dir>/docs_out" --color -W -b linkcheck']
 
 
 [tool.toxn.task.dev]
@@ -55,5 +55,5 @@ use_develop = true
 install_build_requires = true
 install_for_build_requires = true
 commands = ["pip list --format=columns",
-      "python -c 'import sys;print(sys.version);print(sys.executable)'"]
+            "python -c 'import sys;print(sys.version);print(sys.executable)'"]
 
