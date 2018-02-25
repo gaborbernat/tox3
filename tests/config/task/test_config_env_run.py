@@ -11,13 +11,13 @@ async def test_posargs_extraction(conf):
 ''')
 
     conf: ToxConfig = await task.conf()
-    assert conf.task('py36').commands == [['pytest', 'tests']]
+    assert conf.task_of('py36').commands == [['pytest', 'tests']]
 
     conf: ToxConfig = await task.conf('--', '-vv')
-    assert conf.task('py36').commands == [['pytest', 'tests', '-vv']]
+    assert conf.task_of('py36').commands == [['pytest', 'tests', '-vv']]
 
     conf: ToxConfig = await task.conf('--', '<>', '<>')
-    assert conf.task('py36').commands == [['pytest', 'tests', '<>', '<>']]
+    assert conf.task_of('py36').commands == [['pytest', 'tests', '<>', '<>']]
 
 
 @pytest.mark.asyncio
@@ -28,7 +28,7 @@ async def test_posargs_extraction_default(conf):
 ''')
 
     conf: ToxConfig = await task.conf()
-    assert conf.task('py36').commands == [['pytest', 'tests', '-n', '1']]
+    assert conf.task_of('py36').commands == [['pytest', 'tests', '-n', '1']]
 
     conf: ToxConfig = await task.conf('--')
-    assert conf.task('py36').commands == [['pytest', 'tests']]
+    assert conf.task_of('py36').commands == [['pytest', 'tests']]

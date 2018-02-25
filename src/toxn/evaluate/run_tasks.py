@@ -1,9 +1,9 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, cast
 
-from toxn.config import ToxConfig
+from toxn.config import RunTaskConfig, ToxConfig
 from toxn.config.models.task.build import BuiltTaskConfig
 from toxn.task import build, run_task
 from toxn.util import human_timedelta
@@ -11,7 +11,7 @@ from toxn.util import human_timedelta
 
 def build_needs_install(config: ToxConfig) -> bool:
     for name in config.run_tasks:
-        env = config.task(name)
+        env = config.task_of(name)
         if env.install_build:
             if env.use_develop and env.install_for_build_requires is False:
                 continue
@@ -30,7 +30,8 @@ async def run_tasks(config: ToxConfig, logger: logging.Logger) -> int:
             futures = []
             loop = asyncio.get_event_loop()
             for name in config.run_tasks:
-                futures.append(loop.create_task(run_task(config.task(name), built,
+                futures.append(loop.create_task(run_task(cast(RunTaskConfig, config.task_of(name)),
+                                                         built,
                                                          config.skip_missing_interpreters)))
             results = [await f for f in futures]
         else:
@@ -41,7 +42,9 @@ async def run_tasks(config: ToxConfig, logger: logging.Logger) -> int:
                     logger.info('')
                 else:
                     empty_line = True
-                results.append(await run_task(config.task(name), built, config.skip_missing_interpreters))
+                results.append(await run_task(cast(RunTaskConfig, config.task_of(name)),
+                                              built,
+                                              config.skip_missing_interpreters))
         fails = [r for r in results if r]
         result = (fails[0] if len(fails) == 1 else 1) if fails else 0
         return result

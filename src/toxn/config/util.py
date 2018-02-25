@@ -3,10 +3,10 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List
 
-_pattern = re.compile(r'<(?P<key>\w+)(?P<value_1>:[^:]+)?(?P<value_2>:.+)?>')
+_pattern = re.compile(r'<(?P<keys>[\w.]+)(?P<value_1>:[^:]+)?(?P<value_2>:.+)?>')
 
 
-def substitute(obj: Any, arg: str) -> str:
+def substitute(obj: Any, arg: str) -> Any:
     while True:
         matches = list(_pattern.finditer(arg))
         if not matches:
@@ -16,22 +16,25 @@ def substitute(obj: Any, arg: str) -> str:
         for match_obj in matches:
             match: Dict[str, str] = match_obj.groupdict()
 
-            key = match['key']
-            if key == 'env':
+            keys = match['keys']
+            if keys == 'env':
                 os_key = match.get('value_1')
                 if os_key is None:
                     continue
                 os_key = os_key[1:]
                 if os_key in os.environ:
-                    value = os.environ[os_key]
+                    value: Any = os.environ[os_key]
                 else:
                     default = match.get('value_2')
                     value = default[1:] if default is not None else ''
             else:
-                try:
-                    value = getattr(obj, key, None)
-                except AttributeError:
-                    continue
+                value = obj
+                for key in keys.split('.'):
+                    try:
+                        value = getattr(value, key, None)
+                    except AttributeError:
+                        value = None
+                        break
                 if value is None:
                     if 'value_1' not in match:
                         value = ''
@@ -40,6 +43,8 @@ def substitute(obj: Any, arg: str) -> str:
                         value = '' if default is None else default[1:]
 
             start, end = match_obj.span()
+            if end - start == len(arg):
+                return value
             pieces.append(arg[pos: start])
             pieces.append(value)
             pos = end
@@ -51,13 +56,13 @@ def substitute(obj: Any, arg: str) -> str:
 
 class Substitute:
 
-    def _substitute(self, arg: str) -> str:
+    def _substitute(self, arg: str) -> Any:
         return substitute(self, arg)
 
     def __getattribute__(self, item: str) -> Any:
         result = super().__getattribute__(item)
         if isinstance(result, str):
-            return str(self._substitute(result))
+            return self._substitute(result)
         elif isinstance(result, Path):
             return Path(self._substitute(str(result)))
         elif isinstance(result, list) and all(isinstance(i, str) for i in result):

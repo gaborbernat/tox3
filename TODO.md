@@ -1,27 +1,23 @@
-Features planned to be added before stable:
+Features planned to be added before first release (stable API):
 
-1. Better configuration fine tune:
-
-   a. ability to refer to other configs (e.g. ``deps = toxn.deps``
-
-2. Python should be range specify-able, instead of hard coded against one version:
-  ```
-  python_requires='>=2.7,!=3.0.*,!=3.1.*'
-  ```
-3. Plugin system to allow custom env creation (e.g. DPKG/ docker) -
+1. Python should be range specify-able, instead of hard coded against one version:
+      ```
+      python_requires='>=2.7,!=3.0.*,!=3.1.*'
+      ```
+2. Plugin system to allow custom env creation (e.g. DPKG/ docker) -
    use https://packaging.python.org/guides/creating-and-discovering-plugins and allow to
    specify plugin order (per entry point)
-   maybe make the whole pip thing a built in plugin
-4. Reporting
+   - maybe make pip+venv(fallback virtualenv) a built in plugin
+3. Reporting at the end of execution
    - console summary
    - xml/json
-5. Environment generation
-  - allow to generate combination of environments, and then allow conditional settings for per env
+4. Environment generation
+   - allow to generate combination of environments, and then allow conditional settings for per env
   could take a look at Travis/AppVeyor how they do this
-6. Various:
+5. Various:
    - platform specific tox envs, run only if sys.platforms matches (maybe a general filter logic)
    - look at tox, to find out ``default-passenvs`` we should apply
    - a flag for ```alwayscopy venv```
    - provide a way to allow failing a command (e.g. ``ignore_error``)
    - allow to have envs that may fail (``ignore_outcome``)
-7. Finish and write documentation
+6. Finish and write documentation

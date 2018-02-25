@@ -12,15 +12,15 @@ async def list_tasks(config: ToxConfig, logger: logging.Logger) -> int:
                                                  config.run_defined_tasks))
 
     width = max_len(lambda e: e)
-    python_width = max_len(lambda e: config.task(e).python)
+    python_width = max_len(lambda e: config.task_of(e).python)
 
     def print_tasks(tasks: List[str], type_info: str) -> None:
         if tasks:
             logger.info(f'{type_info}:')
         for name in tasks:
             task_str = name.ljust(width)
-            python_str = config.task(name).python.ljust(python_width)
-            logger.info(f'{task_str} [{python_str}] -> {config.task(name).description}')
+            python_str = config.task_of(name).python.ljust(python_width)
+            logger.info(f'{task_str} [{python_str}] -> {config.task_of(name).description}')
 
     print_tasks(config.default_tasks, 'default tasks')
     print_tasks(config.extra_tasks, 'extra defined tasks')

@@ -54,3 +54,4 @@ class RunTaskConfig(TaskConfig):
     @property
     def install_build(self) -> bool:
         return not self._config_dict.get('skip_install', False)
+

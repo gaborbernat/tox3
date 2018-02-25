@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from types import SimpleNamespace
+from typing import Any, List, Optional, Union, cast
 
 from toxn.config.models.task.build import BuildTaskConfig
 from toxn.config.models.task.run import RunTaskConfig
@@ -54,14 +55,18 @@ class ToxConfig(CommonToxConfig):
                     merge_conf(cur_conf['base'], all_task_conf, task_conf)
                 task_conf.update(cur_conf)
 
-        self.build = BuildTaskConfig(options,
-                                     _raw_task(BuildTaskConfig.NAME),
-                                     work_dir,
-                                     BuildTaskConfig.NAME,
-                                     build_system)
-        self._tasks: Dict[str, RunTaskConfig] = {k: RunTaskConfig(options,
-                                                                  _raw_task(k),
-                                                                  work_dir, k) for k in self.tasks}
+        task_ns = SimpleNamespace()
+        task_ns.__dict__[BuildTaskConfig.NAME] = BuildTaskConfig(options,
+                                                                 _raw_task(BuildTaskConfig.NAME),
+                                                                 work_dir,
+                                                                 BuildTaskConfig.NAME,
+                                                                 build_system,
+                                                                 task_ns)
+        self.build = getattr(task_ns, BuildTaskConfig.NAME)
+        task_ns.__dict__.update({k: RunTaskConfig(options,
+                                                  _raw_task(k),
+                                                  work_dir, k, task_ns) for k in self.tasks})
+        self._tasks = task_ns
 
     def _run_defined_tasks(self, defined: List[str]) -> List[str]:
         # environments that are invoked on demand
@@ -70,9 +75,13 @@ class ToxConfig(CommonToxConfig):
             if task not in defined:
                 run_defined.append(task)
         return run_defined
-                                    
-    def task(self, name: str) -> RunTaskConfig:
-        return self._tasks[name]
+
+    @property
+    def task(self) -> SimpleNamespace:
+        return self._tasks
+
+    def task_of(self, name: str) -> Union[RunTaskConfig, BuildTaskConfig]:
+        return cast(Union[RunTaskConfig, BuildTaskConfig], getattr(self._tasks, name))
 
     @property
     def work_dir(self) -> Path:

@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from types import SimpleNamespace
 from typing import List, Optional, Type, Union, cast
 
 from toxn.config.project import BuildSystem, ConfDict
@@ -16,8 +17,9 @@ class BuildTaskConfig(TaskConfig):
                  config_dict: ConfDict,
                  project_work_dir: Path,
                  name: str,
-                 build_system: BuildSystem) -> None:
-        super().__init__(_cli, config_dict, project_work_dir, name)
+                 build_system: BuildSystem,
+                 task: SimpleNamespace) -> None:
+        super().__init__(_cli, config_dict, project_work_dir, name, task)
         self._build_system: BuildSystem = build_system
 
     @property
@@ -68,7 +70,7 @@ class BuiltTaskConfig(BuildTaskConfig):
                  built_package: Path) -> None:
         self._for_build_requires: List[str] = for_build_requires
         self._built_package: Path = built_package
-        super().__init__(base._cli, base._config_dict, base.work_dir, base.name, base._build_system)
+        super().__init__(base._cli, base._config_dict, base.work_dir, base.name, base._build_system, base.task)
 
     @property
     def package(self) -> Optional[Path]:
