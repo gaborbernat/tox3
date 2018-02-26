@@ -45,7 +45,7 @@ async def setup(params: VEnvCreateParam) -> VEnv:
     if cache is not None:
         return cache
 
-    base = await find_python(params.python, params.logger)
+    base = await find_python(params.python_requires, params.logger)
     venv_core = await _create_venv(base, params)
 
     result = VEnv(base, venv_core, params.logger)
@@ -59,7 +59,7 @@ async def setup(params: VEnvCreateParam) -> VEnv:
 
 
 def _env_deps_changed(params: VEnvCreateParam, venv: VEnv) -> bool:
-    return params.python != venv.python.python_name
+    return params.python_requires != venv.python.python_name
 
 
 def _load_cache(venv: VEnvCreateParam) -> Optional[VEnv]:

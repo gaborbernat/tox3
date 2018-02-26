@@ -23,7 +23,7 @@ async def run_task(config: RunTaskConfig,
     result = 0
     try:
         logger.info('start task')
-        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python, logger))
+        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, config.name, config.python_requires, logger))
         config.venv = env
 
         await env_setup(built_config, config, env)

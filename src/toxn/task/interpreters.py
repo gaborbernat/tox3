@@ -1,10 +1,31 @@
+"""
+Interpreters have two main keys:
+
+- name (by default python, but can be overwritten to other, e.g. pypy),
+- version (uses PEP-440 version scheme - https://www.python.org/dev/peps/pep-0440/#version-scheme).
+
+In order to specify a tasks python interpreter one uses PEP-440 version constraint format
+(https://www.python.org/dev/peps/pep-0440/#version-specifiers). In case of a range specifier
+the latest available Python will be used (in spirit of newer -> faster).
+
+
+The lookup strategy for versions is as follows, in this order:
+
+- use the systems shell to acquire the interpreter (e.g. try to invoke {name}{version_part}) in the shell
+  (looks in systems underlying PATH specification; note on Windows symlinks won PATH will not work, but
+  ``bat`` proxy files do)
+- on Windows will look under ``[CDZ]:\\<folder>\\python.exe``,
+- the current invoked Python interpreter used to invoke tox.
+"""
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Optional
+from urllib.parse import urlparse
 
 import py  # type: ignore
+from packaging.requirements import Requirement
 
 from toxn.config.models.venv import Python, VersionInfo
 from toxn.util import CmdLineBufferPrinter, Loggers, run
@@ -17,26 +38,53 @@ class CouldNotFindInterpreter(ValueError):
 async def find_python(python: str, logger: Loggers) -> Python:
     base_python_exe = get_interpreter(python, logger)
     logger.info('%s resolves as %s', python, base_python_exe)
-    version, version_info = await get_python_info(base_python_exe, logger)
-    return Python(python, base_python_exe, version, version_info)
+    return await get_python_info(base_python_exe, logger)
 
 
-async def get_python_info(base_python_exe: Path, logger: Loggers) -> Tuple[str, VersionInfo]:
+async def get_python_info(base_python_exe: Path, logger: Loggers) -> Python:
     printer = CmdLineBufferPrinter(limit=None)
-    await run([base_python_exe, "-c", "import sys; print(sys.version); print(tuple(sys.version_info))"],
+    await run([str(base_python_exe), "-c",
+               "import sys; print(repr( (sys.executable, sys.version, tuple(sys.version_info))) )"],
               stdout=printer, logger=logger)
-    version_info = eval(printer.elements.pop(), {}, {})
-    version = '\n'.join(printer.elements)
-    return version, version_info
+    exec_path, version, info = eval(printer.elements.pop(), {}, {})
+    return Python(Path(exec_path), version, VersionInfo(*info[:5]))
 
 
-WIN_32_MAP: Dict[str, Path] = {
-    'python': Path(sys.executable)
-}
+python_req = re.compile(r'(?P<op>[<>=])(?P<val>[0-9.]+)')
+
+
+async def find_interpreter(req: Requirement, logger: Loggers) -> Python:
+    """
+
+    :param req: the requirement for the interpreter to locate
+    :return: the path to an interpreter that satisfies the requirement
+    :raises CouldNotFindInterpreter: if not interpreter matching the requirement could be found
+    """
+    if req.url:
+        res = urlparse(req.url)
+        if res.scheme == 'file' and res.hostname == 'localhost':
+            path = Path(res.path)
+            if path.exists() and path.is_file():
+                return await get_python_info(path, logger)
+            raise CouldNotFindInterpreter(f'specified path {req.url} does not exist')
+        raise CouldNotFindInterpreter(f'invalid url of {req.url}')
+    else:
+        pass
 
 
 def get_interpreter(name: str, logger: Loggers) -> Path:
+    """For a requirement string, get the correct interpreter.
+
+    :param name:
+    :param logger:
+    :return:
+    """
+
     # noinspection PyCallByClass
+    requires = name.split(',')
+    for req in requires:
+        req = re.sub(r"\s+", "", req, flags=re.UNICODE)
+
     binary_str = py.path.local.sysfind(name)
     if binary_str is not None:
         return Path(binary_str)
@@ -60,7 +108,7 @@ def get_interpreter(name: str, logger: Loggers) -> Path:
         if binary is None:
             binary = locate_via_py(logger, major, minor)
     else:
-        binary = WIN_32_MAP.get(name, None)
+        binary = sys.executable
     if binary is not None and binary.exists():
         return binary
 

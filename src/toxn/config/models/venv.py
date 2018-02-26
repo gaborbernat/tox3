@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple
 
 from toxn.util import Loggers
 
@@ -8,7 +8,7 @@ class VEnvCreateParam(NamedTuple):
     recreate: bool
     dir: Path
     name: str
-    python: str
+    python_requires: str
     logger: Loggers
 
     @property
@@ -30,11 +30,15 @@ class Install(NamedTuple):
     use_develop: bool
 
 
-VersionInfo = Tuple[int, int, int, str]
+class VersionInfo(NamedTuple):
+    major: int
+    micro: int
+    minor: int
+    release_level: str
+    serial: int
 
 
 class Python(NamedTuple):
-    python_name: str
     exe: Path
     version: str
     version_info: VersionInfo

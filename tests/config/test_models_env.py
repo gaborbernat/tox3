@@ -30,8 +30,8 @@ async def test_python_custom(conf):
     [tool.toxn.task.extra]
     ''')
     conf: ToxConfig = await env.conf()
-    assert conf.build.python == 'magic'
-    assert conf.task_of('extra').python == 'magic'
+    assert conf.build.python_requires == 'magic'
+    assert conf.task_of('extra').python_requires == 'magic'
 
 
 @pytest.mark.parametrize('env_name, python', [
@@ -48,5 +48,5 @@ async def test_python_implicit(conf, env_name, python):
     [tool.toxn.task.{env_name}]
     ''')
     conf: ToxConfig = await env.conf()
-    assert conf.build.python == 'python'
-    assert conf.task_of(env_name).python == python
+    assert conf.build.python_requires == 'python'
+    assert conf.task_of(env_name).python_requires == python

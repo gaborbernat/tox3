@@ -49,8 +49,9 @@ class TaskConfig(CommonToxConfig):
         return result
 
     @property
-    def python(self) -> str:
-        key = self._config_dict.get('python')
+    def python_requires(self) -> str:
+        """"""
+        key = self._config_dict.get('python_requires')
         if key is None:
             return self.resolve_python_key(self.name)
         return cast(str, key)

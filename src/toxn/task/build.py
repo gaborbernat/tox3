@@ -20,7 +20,7 @@ async def build(config: BuildTaskConfig) -> BuiltTaskConfig:
     name = 'build'
     try:
         LOGGER.info('build project %s as %s', config.root_dir, config.build_type)
-        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python, LOGGER))
+        env = await setup_venv(VEnvCreateParam(config.recreate, config.work_dir, name, config.python_requires, LOGGER))
         config.venv = env
         await install(env, install_params(f'build requires',
                                           config.build_requires,
